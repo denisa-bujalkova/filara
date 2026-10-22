@@ -17,6 +17,11 @@
     return PRODUKTY.find((p) => p.id === id);
   }
 
+  /** Kategorie výrobku jako seznam – v produkty.js může být jedna ("Zvířata") i víc (["Zvířata", "Hračky"]). */
+  function kategorieProduktu(p) {
+    return [].concat(p.kategorie || []);
+  }
+
   function barvyProduktu(p) {
     return (p.barvy || []).map((n) => barvaPodleNazvu.get(n)).filter(Boolean);
   }
@@ -267,11 +272,12 @@
       zamichej();
       stavNabidky.razeni = "nahodne";
     }
-    const odkazy = ["", ...KATEGORIE]
+    // Bez vybrané kategorie (klik na „Nabídka“) se ukáže vše; v seznamu jsou jen samotné kategorie.
+    const odkazy = KATEGORIE
       .map((k) => {
-        const pocet = k ? PRODUKTY.filter((p) => p.kategorie === k).length : PRODUKTY.length;
+        const pocet = PRODUKTY.filter((p) => kategorieProduktu(p).includes(k)).length;
         const aktivni = stavNabidky.kategorie === k;
-        return `<li><a href="${adresaKategorie(k)}" ${aktivni ? 'aria-current="page"' : ""}><span>${k ? esc(k) : "Vše"}</span><small>${pocet}</small></a></li>`;
+        return `<li><a href="${adresaKategorie(k)}" ${aktivni ? 'aria-current="page"' : ""}><span>${esc(k)}</span><small>${pocet}</small></a></li>`;
       })
       .join("");
     return `
@@ -301,7 +307,7 @@
   }
 
   function vypisNabidky() {
-    let seznam = PRODUKTY.filter((p) => !stavNabidky.kategorie || p.kategorie === stavNabidky.kategorie);
+    let seznam = PRODUKTY.filter((p) => !stavNabidky.kategorie || kategorieProduktu(p).includes(stavNabidky.kategorie));
     const razeni = {
       "cena-vzestupne": (a, b) => a.cena - b.cena,
       "cena-sestupne": (a, b) => b.cena - a.cena,
@@ -347,9 +353,12 @@
            )
            .join("")}</div>`
       : "";
+    // V drobečkové navigaci kategorie, ze které zákazník přišel (má-li výrobek víc kategorií).
+    const kategorie = kategorieProduktu(p);
+    const kat = kategorie.includes(stavNabidky.kategorie) ? stavNabidky.kategorie : kategorie[0];
     return `
       <div class="container page">
-        <nav class="breadcrumb"><a href="#nabidka">Nabídka</a> / <a href="${adresaKategorie(p.kategorie)}">${esc(p.kategorie)}</a></nav>
+        <nav class="breadcrumb"><a href="#nabidka">Nabídka</a> / <a href="${adresaKategorie(kat)}">${esc(kat)}</a></nav>
         <div class="detail">
           <div>
             <div class="card gallery-main" id="hlavni-foto">${obrazek(fotky[0], p.nazev, i)}</div>
@@ -644,7 +653,7 @@ Děkuji`;
           <li>Tiskneme z PLA filamentu, materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
           <li>Každý kus ručně dočistíme a zkontrolujeme.</li>
           <li>Některé modely dokreslujeme ručně akvarelem, a tak každý dostane svůj vlastní charakter.</li>
-          <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
+          <li>Výrobky, které máme skladem lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
         </ul>
       </div>`;
   }
