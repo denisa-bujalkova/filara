@@ -24,8 +24,8 @@ const OBCHOD = {
   // Na tento e-mail chodí objednávky z košíku – nezapomeňte ho přepsat na svůj.
   email: "klaudy@filara.cz",
   telefon: "+420 000 000 000",
-  adresa: "Ulice 1, 000 00 Město",
-  provozovatel: "Jméno Příjmení, IČO: 00000000",
+  adresa: "Rýznerova 177/10, Únětice, 25262",
+  provozovatel: "Klára a Filip Klaudy, IČO: 00000000",
 };
 
 // Způsoby dopravy nabízené v košíku. adresa: "vydejni-misto" | "dorucovaci" | "zadna"
@@ -66,6 +66,7 @@ const UVODNI_FOTKY = [
 // ukáže se „Termíny nejbližších trhů brzy doplníme.“ Vzor (smažte // na začátku a upravte):
 // { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
 const TRHY = [
+  { datum: "13. 12. 2026", nazev: "Vánoční trh", misto: "Únětice" },
 ];
 
 /*
@@ -99,7 +100,8 @@ const PRODUKTY = [
     cena: 0,
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["Růžová", "Modrá"],
+    skladem: { "Růžová": 2, "Modrá": 0 },
     obrazky: [],
   },
   {
@@ -110,6 +112,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
+    skladem: 0,
     obrazky: [],
   },
   {
@@ -120,6 +123,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
+    skladem: 3,
     obrazky: ["obrazky/snek-1.jpg"],
   },
   {
