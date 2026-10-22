@@ -1,0 +1,1514 @@
+/* Vzhled FILARA: tmavý grafit, chromové stříbro a modrozelený přechod podle čočky v logu. */
+:root {
+  --bg: #0b0d10;
+  --surface: #14181d;
+  --surface-2: #1b2128;
+  --line: #2a313a;
+  --line-strong: #3a434e;
+  --text: #e9edf0;
+  --muted: #a3adb6;
+  --subtle: #7a858f;
+  --teal: #1fd1b4;
+  --cyan: #1fb3d6;
+  --blue: #2f7cf0;
+  --accent-gradient: linear-gradient(120deg, #22e0b0 0%, #1fb3d6 50%, #2f6fed 100%);
+  --chrome-gradient: linear-gradient(180deg, #ffffff 0%, #d9dfe4 40%, #8e98a2 62%, #e6eaed 100%);
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  /* Pojistka pro telefony: nic nesmí stránku posunout do strany. */
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* Patička je vždy dole – i na krátké stránce (prázdná kategorie, prázdný košík). */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(31, 179, 214, 0.12), transparent 60%),
+    radial-gradient(900px 400px at -10% 30%, rgba(34, 224, 176, 0.06), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 24px;
+  }
+}
+
+.chrome-text {
+  background: var(--chrome-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.accent-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Horní lišta ---------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(11, 13, 16, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--accent-gradient);
+  opacity: 0.45;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px 28px;
+  min-height: 68px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 18px rgba(31, 179, 214, 0.35);
+}
+
+.brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  background: var(--chrome-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-small .brand-logo {
+  width: 32px;
+  height: 32px;
+}
+
+.brand-small .brand-name {
+  font-size: 14px;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.nav a {
+  position: relative;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.nav a:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.nav a[aria-current="page"] {
+  color: var(--text);
+}
+
+.nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-gradient);
+}
+
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 8px 16px 8px 12px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.cart-link:hover,
+.cart-link[aria-current="page"] {
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px rgba(31, 179, 214, 0.25);
+}
+
+.cart-link svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cart-count {
+  min-width: 22px;
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: var(--accent-gradient);
+  color: #04201c;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.cart-count.bump {
+  animation: bump 0.4s ease;
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.35);
+  }
+}
+
+/* Na úzkém displeji: logo + košík v prvním řádku, menu pod nimi. */
+@media (max-width: 639px) {
+  .header-inner {
+    flex-wrap: wrap;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+  .brand {
+    margin-right: auto;
+  }
+  .nav {
+    order: 3;
+    width: 100%;
+    margin: 0 -12px;
+  }
+  .cart-label {
+    display: none;
+  }
+  .cart-link {
+    padding: 8px 12px;
+  }
+}
+
+/* ---------- Patička ---------- */
+
+#app {
+  flex: 1 0 auto;
+}
+
+.footer {
+  margin-top: 64px;
+  border-top: 1px solid var(--line);
+  background: #090b0d;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Úzká patička: název s textem a kontakty vedle sebe v jednom řádku */
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.footer-inner > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.footer a[data-shop-email] {
+  color: var(--cyan);
+}
+
+.footer-copy {
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding: 1px 16px;
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--subtle);
+}
+
+/* ---------- Společné prvky ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s, border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #04201c;
+  box-shadow: 0 6px 24px -8px rgba(31, 179, 214, 0.6);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  border-color: #6b7681;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.section {
+  padding-top: 48px;
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  font-size: 26px;
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.field {
+  display: block;
+}
+
+.field + .field {
+  margin-top: 14px;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Hvězdička u povinných údajů */
+.povinne {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #0f1317;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(31, 179, 214, 0.2);
+}
+
+.input[aria-invalid="true"] {
+  border-color: #f87171;
+}
+
+textarea.input {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--subtle);
+}
+
+.qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #0f1317;
+}
+
+.qty button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.qty button:hover {
+  color: var(--cyan);
+}
+
+.qty button:disabled {
+  color: var(--subtle);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty output {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.qty-small button {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: #1b2128;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+  animation: toast-in 0.25s ease;
+}
+
+.toast a {
+  font-weight: 700;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+/* ---------- Úvod ---------- */
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  padding-top: 56px;
+  padding-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .hero-inner {
+    grid-template-columns: 1.1fr 0.9fr;
+    padding-top: 88px;
+    padding-bottom: 48px;
+  }
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 16px;
+  border: 1px solid rgba(31, 179, 214, 0.4);
+  border-radius: 999px;
+  background: rgba(31, 179, 214, 0.08);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.hero h1 {
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  max-width: 520px;
+  margin: 20px 0 0;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.hero-art {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.hero-art svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(31, 179, 214, 0.25));
+}
+
+/* Fotky v kruhu s chromovým okrajem jako v logu */
+.hero-foto {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #cfd6dc 45%, #7e8892 60%, #e3e8ec);
+  box-shadow: 0 20px 40px rgba(31, 179, 214, 0.25);
+}
+
+.hero-foto img {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  background: #eef0f2;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.hero-foto img.aktivni {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-foto img {
+    transition: none;
+  }
+}
+
+.benefits {
+  display: grid;
+  gap: 16px;
+  padding-top: 32px;
+  padding-bottom: 64px;
+}
+
+@media (min-width: 640px) {
+  .benefits {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .benefits {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.benefit {
+  padding: 20px;
+}
+
+.benefit-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(31, 179, 214, 0.12);
+  color: var(--cyan);
+}
+
+.benefit-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.benefit h3 {
+  font-size: 16px;
+}
+
+.benefit p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Trhy na úvodní stránce – úzký pruh pod úvodem, nad kartami s přednostmi */
+.markets-section {
+  padding-top: 8px;
+}
+
+.market-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+  padding: 16px 20px;
+}
+
+.market-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent-gradient);
+}
+
+.market-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.market-banner-head strong,
+.market-list strong {
+  display: block;
+  color: var(--text);
+}
+
+.market-banner-head span,
+.market-list span {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.market-banner-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(31, 179, 214, 0.12);
+  color: var(--cyan);
+}
+
+.market-banner-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.market-list {
+  display: grid;
+  flex: 1 1 360px;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.market-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.market-list .link {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .market-list {
+    border-left: 1px solid var(--line);
+    padding-left: 32px;
+  }
+}
+
+/* ---------- Nabídka ---------- */
+
+.page {
+  padding-top: 40px;
+}
+
+.page h1 {
+  font-size: 32px;
+}
+
+/* Postranní panel s kategoriemi vlevo, výrobky vpravo. Na mobilu se panel změní v řádek nad výrobky. */
+.shop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .shop-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+}
+
+.sidebar {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 10px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+.sidebar-title {
+  margin: 0 10px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+
+.sidebar ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.sidebar a:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.sidebar a[aria-current="page"] {
+  background: rgba(31, 179, 214, 0.1);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.sidebar a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-gradient);
+}
+
+.sidebar small {
+  min-width: 26px;
+  border-radius: 999px;
+  padding: 1px 8px;
+  background: #0f1317;
+  font-size: 12px;
+  text-align: center;
+  color: var(--subtle);
+}
+
+.sidebar a[aria-current="page"] small {
+  background: var(--accent-gradient);
+  color: #04201c;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+  .sidebar-title {
+    display: none;
+  }
+  /* Kategorie se na telefonu zalamují do řádků – stránka se posouvá jen nahoru a dolů. */
+  .sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 2px 0 6px;
+  }
+  .sidebar a {
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 8px 6px 14px;
+    background: var(--surface);
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .sidebar a[aria-current="page"] {
+    border-color: var(--cyan);
+  }
+  .sidebar a[aria-current="page"]::before {
+    display: none;
+  }
+}
+
+.list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.list-head + #vypis .grid {
+  margin-top: 20px;
+}
+
+@media (min-width: 1024px) {
+  .shop-layout .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--subtle);
+}
+
+.sort select {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--surface);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    gap: 22px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.product-card {
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(31, 179, 214, 0.55);
+  box-shadow: 0 14px 32px -14px rgba(31, 179, 214, 0.45);
+}
+
+.thumb {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #101418;
+}
+
+.thumb img,
+.thumb svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb {
+  position: relative;
+}
+
+/* Štítek „Ručně malováno“ – na kartě v rohu fotky, v detailu nad názvem, v textu na řádku. */
+.tag-painted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(31, 209, 180, 0.55);
+  border-radius: 999px;
+  padding: 2px 10px 2px 8px;
+  background: rgba(11, 13, 16, 0.78);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--teal);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.tag-painted svg {
+  width: 13px;
+  height: 13px;
+}
+
+.thumb .tag-painted {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  backdrop-filter: blur(4px);
+}
+
+.detail .tag-painted {
+  margin-bottom: 12px;
+}
+
+.product-card-body {
+  padding: 14px 16px 16px;
+}
+
+.product-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.product-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.price {
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.sold-out {
+  color: #f87171;
+}
+
+.dots {
+  display: flex;
+}
+
+.dots span {
+  width: 16px;
+  height: 16px;
+  margin-left: -4px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+}
+
+.dots small {
+  padding-left: 6px;
+  font-size: 12px;
+  color: var(--subtle);
+}
+
+.empty {
+  margin: 64px 0;
+  text-align: center;
+  color: var(--subtle);
+}
+
+/* ---------- Detail výrobku ---------- */
+
+.breadcrumb {
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: var(--subtle);
+}
+
+.breadcrumb a:hover {
+  color: var(--text);
+}
+
+.detail {
+  display: grid;
+  gap: 40px;
+}
+
+@media (min-width: 768px) {
+  .detail {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.gallery-main {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.gallery-main img,
+.gallery-main svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-thumbs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gallery-thumbs button {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: 0 0 0 2px transparent;
+  cursor: pointer;
+}
+
+.gallery-thumbs button[aria-current="true"] {
+  box-shadow: 0 0 0 2px var(--cyan);
+}
+
+.gallery-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail h1 {
+  font-size: 32px;
+}
+
+.detail .price {
+  margin: 12px 0 0;
+  font-size: 26px;
+}
+
+.detail-desc {
+  margin: 20px 0 0;
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 24px 0 0;
+  font-size: 14px;
+}
+
+.specs div {
+  padding: 12px;
+}
+
+.specs dt {
+  color: var(--subtle);
+}
+
+.specs dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.buy {
+  margin-top: 28px;
+  padding: 20px;
+}
+
+.swatches-label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.swatches-label strong {
+  color: var(--text);
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.swatch {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--surface-2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.swatch:hover {
+  transform: scale(1.08);
+}
+
+.swatch[aria-pressed="true"] {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--cyan), 0 0 14px rgba(31, 179, 214, 0.55);
+}
+
+/* Vyprodaná barva – přeškrtnutá červenou čarou */
+.swatch-vyprodano {
+  position: relative;
+  opacity: 0.6;
+}
+
+.swatch-vyprodano::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -5px;
+  right: -5px;
+  height: 3px;
+  border-radius: 2px;
+  background: #f87171;
+  box-shadow: 0 0 0 1px var(--surface-2);
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.buy-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.buy-row .btn {
+  flex: 1;
+  min-width: 180px;
+}
+
+.buy-row .btn:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* ---------- Košík ---------- */
+
+.cart-layout {
+  display: grid;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+@media (min-width: 960px) {
+  .cart-layout {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+}
+
+.cart-items {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-item {
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+}
+
+.cart-item-thumb {
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.cart-item-thumb img,
+.cart-item-thumb svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cart-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.cart-item-top a:hover {
+  color: var(--cyan);
+}
+
+.cart-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.cart-item-meta i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+}
+
+.cart-item-note {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.remove {
+  border: 0;
+  background: none;
+  font-size: 14px;
+  color: var(--subtle);
+  cursor: pointer;
+}
+
+.remove:hover {
+  color: #f87171;
+}
+
+.summary {
+  padding: 22px;
+}
+
+@media (min-width: 960px) {
+  .summary {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+.summary h2 {
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.radio-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+  border: 0;
+  padding: 0;
+}
+
+.radio-list legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.radio:has(input:checked) {
+  border-color: var(--cyan);
+  background: rgba(31, 179, 214, 0.08);
+}
+
+.radio span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.radio input {
+  accent-color: var(--cyan);
+}
+
+.totals {
+  margin: 18px 0;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  font-size: 14px;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.totals .total {
+  margin-top: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.error-box {
+  margin-bottom: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(248, 113, 113, 0.08);
+  font-size: 14px;
+  color: #fca5a5;
+}
+
+.after-send {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  font-size: 13px;
+  color: var(--subtle);
+}
+
+.after-send .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.after-send .btn {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+/* ---------- Textové stránky ---------- */
+
+.prose {
+  max-width: 760px;
+}
+
+.prose h1 {
+  margin-bottom: 24px;
+}
+
+.prose h2 {
+  margin: 32px 0 12px;
+  font-size: 20px;
+}
+
+.prose p,
+.prose li {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.contact-grid {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+  padding: 24px;
+}
+
+@media (min-width: 640px) {
+  .contact-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.contact-grid small {
+  display: block;
+  font-size: 13px;
+  color: var(--subtle);
+}
+
+.contact-grid strong {
+  font-size: 17px;
+}
+
+.contact-grid a {
+  color: var(--cyan);
+}
