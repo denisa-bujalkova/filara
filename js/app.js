@@ -211,7 +211,7 @@
         <div class="container hero-inner">
           <div>
             <h1><span class="chrome-text">Originální výrobky</span><br /><span class="accent-text">vrstvu po vrstvě</span></h1>
-            <p>Dekorace, hračky a praktické pomocníky do domácnosti tiskneme s láskou na našich 3D tiskárnách. Vyberte si barvu a nechte si výrobek přizpůsobit.</p>
+            <p>Zvířátka, dekorace, květiny i pomocníky do domácnosti tiskneme z PLA, ručně dočišťujeme a některé i malujeme akvarelem. Vyberte si, co vám udělá radost.</p>
             <div class="hero-actions">
               <a href="#nabidka" class="btn btn-primary">Prohlédnout nabídku</a>
               <a href="#o-nas" class="btn btn-secondary">Kdo jsme</a>
@@ -635,11 +635,11 @@ Děkuji`;
     return `
       <div class="container page prose">
         <h1 class="chrome-text">O nás</h1>
-        <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je Filara – naše srdcová záležitost.</p>
-        <p>Modely si sami nenavrhujeme, ale podporujeme autory nákupem licencí, to pravé kouzlo jim vdechujeme až u nás doma. Vyhledáváme pro vás ty nejzajímavější, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
+        <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je FILARA – naše srdcová záležitost.</p>
+        <p>Modely si sami nenavrhujeme. Podporujeme autory koupí jejich licence. To pravé kouzlo jim ale vdechujeme až u nás doma. Vyrábíme pro vás ty nejzajímavější modely, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
         <h2>Jak pracujeme</h2>
         <ul>
-          <li>Tiskneme z PLA filamentu, ekologického materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
+          <li>Tiskneme z PLA filamentu, materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
           <li>Každý kus ručně dočistíme a zkontrolujeme.</li>
           <li>Některé modely dokreslujeme ručně akvarelem, a tak každý dostane svůj vlastní charakter.</li>
           <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
@@ -651,12 +651,11 @@ Děkuji`;
     return `
       <div class="container page prose">
         <h1 class="chrome-text">Kontakt</h1>
-        <p>Máte dotaz k objednávce nebo nápad na výrobek na zakázku? Ozvěte se nám, odpovídáme obvykle do 24 hodin.</p>
         <div class="card contact-grid">
           <div><small>E-mail</small><strong><a href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a></strong></div>
           <div><small>Telefon</small><strong>${esc(OBCHOD.telefon)}</strong></div>
           <div><small>Provozovatel</small><strong>${esc(OBCHOD.nazev)}</strong><br />${esc(OBCHOD.provozovatel)}<br />${esc(OBCHOD.adresa)}</div>
-          <div><small>Osobní odběr</small>Výrobky skladem lze vyzvednout v Salonu Clair<br />Rýznerova 177/10, Únětice, 252 62</div>
+          <div><small>Osobní odběr</small>Salon Clair<br />Rýznerova 177/10, Únětice, 252 62</div>
         </div>
       </div>`;
   }

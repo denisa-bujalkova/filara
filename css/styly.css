@@ -279,25 +279,26 @@ textarea {
   color: var(--muted);
 }
 
+/* Úzká patička: logo s textem a kontakty vedle sebe v jednom řádku */
 .footer-inner {
-  display: grid;
-  gap: 16px;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
-@media (min-width: 640px) {
-  .footer-inner {
-    grid-template-columns: 2fr 1fr;
-  }
+.footer-inner > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
 }
 
 .footer p {
-  margin: 6px 0 0;
-}
-
-.footer-inner > div:last-child p {
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .footer-title {
@@ -312,7 +313,7 @@ textarea {
 .footer-copy {
   margin: 0;
   border-top: 1px solid var(--line);
-  padding: 8px 16px;
+  padding: 6px 16px;
   text-align: center;
   font-size: 12px;
   color: var(--subtle);
