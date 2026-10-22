@@ -22,6 +22,15 @@
 
 html {
   color-scheme: dark;
+  /* Pojistka pro telefony: nic nesmí stránku posunout do strany. */
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
 }
 
 /* Patička je vždy dole – i na krátké stránce (prázdná kategorie, prázdný košík). */
@@ -626,6 +635,7 @@ textarea.input {
   display: grid;
   gap: 16px;
   padding-top: 32px;
+  padding-bottom: 64px;
 }
 
 @media (min-width: 640px) {
@@ -667,30 +677,6 @@ textarea.input {
 .benefit p {
   margin: 4px 0 0;
   font-size: 14px;
-  color: var(--muted);
-}
-
-.cta {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 32px;
-}
-
-.cta::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: var(--accent-gradient);
-}
-
-.cta p {
-  margin: 6px 0 0;
   color: var(--muted);
 }
 
@@ -898,13 +884,12 @@ textarea.input {
   .sidebar-title {
     display: none;
   }
+  /* Kategorie se na telefonu zalamují do řádků – stránka se posouvá jen nahoru a dolů. */
   .sidebar ul {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    overflow-x: auto;
-    margin: 0 -16px;
-    padding: 2px 16px 6px;
-    scrollbar-width: none;
+    padding: 2px 0 6px;
   }
   .sidebar a {
     border: 1px solid var(--line-strong);
@@ -1055,6 +1040,10 @@ textarea.input {
 .price {
   font-weight: 700;
   color: var(--teal);
+}
+
+.sold-out {
+  color: #f87171;
 }
 
 .dots {
@@ -1220,6 +1209,25 @@ textarea.input {
 .swatch[aria-pressed="true"] {
   transform: scale(1.1);
   box-shadow: 0 0 0 2px var(--cyan), 0 0 14px rgba(31, 179, 214, 0.55);
+}
+
+/* Vyprodaná barva – přeškrtnutá červenou čarou */
+.swatch-vyprodano {
+  position: relative;
+  opacity: 0.6;
+}
+
+.swatch-vyprodano::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -5px;
+  right: -5px;
+  height: 3px;
+  border-radius: 2px;
+  background: #f87171;
+  box-shadow: 0 0 0 1px var(--surface-2);
+  transform: translateY(-50%) rotate(-45deg);
 }
 
 .buy-row {

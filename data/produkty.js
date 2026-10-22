@@ -24,7 +24,7 @@ const OBCHOD = {
   // Na tento e-mail chodí objednávky z košíku – nezapomeňte ho přepsat na svůj.
   email: "klaudy@filara.cz",
   telefon: "+420 000 000 000",
-  adresa: "Rýznerova 177/10, Únětice, 25262",
+  adresa: "Rýznerova 177/10, 252 62 Únětice",   // sídlo i výdejní místo (Salon Clair)
   provozovatel: "Klára a Filip Klaudy, IČO: 00000000",
 };
 
@@ -372,5 +372,25 @@ const PRODUKTY = [
     popis: "",
     barvy: [],
     obrazky: ["obrazky/drak-1.jpg"],
+  },
+  {
+    id: "snehova-vlocka",
+    nazev: "Sněhová vločka",
+    kategorie: "Vánoce",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "srdce",
+    nazev: "Srdce",
+    kategorie: "Klíčenky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
   },
 ];

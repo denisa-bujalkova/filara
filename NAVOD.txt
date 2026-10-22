@@ -14,7 +14,8 @@ Na tento e-mail chodí objednávky z košíku.
 Kusy skladem:
   U výrobku v data\produkty.js napište, kolik hotových kusů máte, např. skladem: 3,
   Číslo se na webu nezobrazí. Zákazník si jen nemůže dát do košíku víc kusů, než máte.
-  skladem: 0, znamená vyprodáno. Počet pro jednotlivé barvy: skladem: { "Bílá": 2, "Černá": 1 },
+  skladem: 0, znamená vyprodáno – místo ceny se ukáže červeně „Vyprodáno“ a výrobek je v nabídce
+  vždy na konci. Počet pro jednotlivé barvy: skladem: { "Bílá": 2, "Černá": 1 },
   Když řádek skladem u výrobku chybí, počet se nehlídá.
   Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
 

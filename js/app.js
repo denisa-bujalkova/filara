@@ -37,6 +37,18 @@
     return Math.max(0, Math.floor(Number(n)) || 0);
   }
 
+  /** Výrobek je celý vyprodaný – skladem: 0, nebo u počtu podle barev nemá kus v žádné barvě. */
+  function vyprodano(p) {
+    if (!skladPodleBarev(p)) return skladem(p) === 0;
+    const barvy = p.barvy && p.barvy.length ? p.barvy : Object.keys(p.skladem);
+    return barvy.every((b) => skladem(p, b) === 0);
+  }
+
+  /** Cena, nebo červené „Vyprodáno“ u vyprodaného výrobku. */
+  function cenaNeboVyprodano(p) {
+    return vyprodano(p) ? `<span class="sold-out">Vyprodáno</span>` : kc.format(p.cena);
+  }
+
   /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“). */
   function lzePridat(p, barva, krome) {
     const vKosiku = kosik
@@ -162,7 +174,7 @@
       <div class="product-card-body">
         <h3>${esc(p.nazev)}</h3>
         <div class="product-card-meta">
-          <span class="price">${kc.format(p.cena)}</span>
+          <span class="price">${cenaNeboVyprodano(p)}</span>
           ${barvy.length ? `<span class="dots" aria-label="Barvy: ${barvy.length}">${tecky}${barvy.length > 5 ? `<small>+${barvy.length - 5}</small>` : ""}</span>` : ""}
         </div>
       </div>
@@ -281,12 +293,7 @@
         <div class="container hero-inner">
           <div>
             <h1><span class="chrome-text">Originální výrobky</span><br /><span class="accent-text">vrstvu po vrstvě</span></h1>
-            <p>Zvířátka, dekorace, květiny i pomocníky do domácnosti tiskneme z PLA, ručně dočišťujeme a některé i malujeme akvarelem. Vyberte si, co vám udělá radost.</p>
-            <div class="hero-actions">
-              <a href="#nabidka" class="btn btn-primary">Prohlédnout nabídku</a>
-              <a href="#o-nas" class="btn btn-secondary">Kdo jsme</a>
-            </div>
-          </div>
+            <p>Zvířátka, dekorace, květiny i pomocníky do domácnosti tiskneme z PLA, ručně dočišťujeme a některé i malujeme akvarelem. Vyberte si, co vám udělá radost.</p>          </div>
           <div class="hero-art">${uvodniFotky()}</div>
         </div>
       </section>
@@ -304,13 +311,7 @@
         <div class="grid" style="margin-top:0">${doporucene.map(kartaProduktu).join("")}</div>
       </section>`
           : ""
-      }
-      <section class="container section">
-        <div class="card cta">
-          <div><h2 class="chrome-text">Máte vlastní nápad?</h2><p>Rádi vytiskneme něco jen pro vás. Ozvěte se nám a domluvíme se.</p></div>
-          <a href="#kontakt" class="btn btn-primary">Napište nám</a>
-        </div>
-      </section>`;
+      }`;
   }
 
   // Kategorie je součástí adresy (#nabidka/Zvířata), aby fungovalo tlačítko Zpět.
@@ -378,7 +379,9 @@
       nejnovejsi: (a, b) => PRODUKTY.indexOf(b) - PRODUKTY.indexOf(a),
       nahodne: (a, b) => stavNabidky.poradi.indexOf(a.id) - stavNabidky.poradi.indexOf(b.id),
     };
-    seznam.sort(razeni[stavNabidky.razeni] || razeni.nahodne);
+    // Vyprodané výrobky jsou vždy na konci, ať je zvolené jakékoli řazení.
+    const podleRazeni = razeni[stavNabidky.razeni] || razeni.nahodne;
+    seznam.sort((a, b) => vyprodano(a) - vyprodano(b) || podleRazeni(a, b));
     document.getElementById("vypis").innerHTML = seznam.length
       ? `<div class="grid">${seznam.map(kartaProduktu).join("")}</div>`
       : `<p class="empty">${PRODUKTY.length ? "V této kategorii zatím nic nemáme. Brzy přidáme!" : "Na nabídce právě pracujeme. Brzy tu najdete naše výrobky!"}</p>`;
@@ -406,13 +409,16 @@
             .map((f, n) => `<button type="button" data-foto="${n}" aria-current="${n === 0}" aria-label="Obrázek ${n + 1}"><img src="${esc(f)}" alt="" /></button>`)
             .join("")}</div>`
         : "";
+    // Vyprodaná barva je přeškrtnutá; předem se vybere první barva, která je skladem.
+    const vychozi = barvy.find((b) => skladem(p, b.nazev) > 0) || barvy[0];
     const vyberBarvy = barvy.length
-      ? `<p class="swatches-label">Barva: <strong id="nazev-barvy">${esc(barvy[0].nazev)}</strong></p>
+      ? `<p class="swatches-label">Barva: <strong id="nazev-barvy">${esc(vychozi.nazev)}</strong></p>
          <div class="swatches" role="group" aria-label="Barva">${barvy
-           .map(
-             (b, n) =>
-               `<button type="button" class="swatch" data-barva="${esc(b.nazev)}" aria-pressed="${n === 0}" aria-label="${esc(b.nazev)}" title="${esc(b.nazev)}" style="background:${esc(b.hex)}"></button>`,
-           )
+           .map((b) => {
+             const nic = skladem(p, b.nazev) === 0;
+             const popis = nic ? `${b.nazev} – vyprodáno` : b.nazev;
+             return `<button type="button" class="swatch${nic ? " swatch-vyprodano" : ""}" data-barva="${esc(b.nazev)}" aria-pressed="${b === vychozi}" aria-label="${esc(popis)}" title="${esc(popis)}" style="background:${esc(b.hex)}"></button>`;
+           })
            .join("")}</div>`
       : "";
     // V drobečkové navigaci kategorie, ze které zákazník přišel (má-li výrobek víc kategorií).
@@ -429,7 +435,7 @@
           <div>
             ${p.rucneMalovano ? stitekMalovano() : ""}
             <h1 class="chrome-text">${esc(p.nazev)}</h1>
-            <p class="price">${kc.format(p.cena)}</p>
+            <p class="price">${cenaNeboVyprodano(p)}</p>
             <p class="detail-desc">${esc(p.popis)}</p>
             <dl class="specs">
               <div class="card"><dt>Materiál</dt><dd>${esc(p.material)}</dd></div>
@@ -465,7 +471,7 @@
       }),
     );
 
-    let barva = barvyProduktu(p)[0]?.nazev || null;
+    let barva = app.querySelector('[data-barva][aria-pressed="true"]')?.dataset.barva || null;
     let pocet = 1;
     const vystupPoctu = document.getElementById("pocet");
     const tlacitko = document.getElementById("pridat");
@@ -726,13 +732,13 @@ Děkuji`;
       <div class="container page prose">
         <h1 class="chrome-text">O nás</h1>
         <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je FILARA – naše srdcová záležitost.</p>
-        <p>Modely si sami nenavrhujeme. Podporujeme autory koupí jejich licence. To pravé kouzlo jim ale vdechujeme až u nás doma. Vyrábíme pro vás ty nejzajímavější modely, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
+        <p>Modely si sami nenavrhujeme. Podporujeme autory koupí jejich licencí. To pravé kouzlo jim ale vdechujeme až u nás doma. Vybíráme pro vás ty nejzajímavější modely, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
         <h2>Jak pracujeme</h2>
         <ul>
           <li>Tiskneme z PLA filamentu, materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
           <li>Každý kus ručně dočistíme a zkontrolujeme.</li>
           <li>Některé modely dokreslujeme ručně akvarelem, a tak každý dostane svůj vlastní charakter.</li>
-          <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
+          <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, 252 62 Únětice).</li>
         </ul>
       </div>`;
   }
@@ -745,7 +751,7 @@ Děkuji`;
           <div><small>E-mail</small><strong><a href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a></strong></div>
           <div><small>Telefon</small><strong>${esc(OBCHOD.telefon)}</strong></div>
           <div><small>Provozovatel</small><strong>${esc(OBCHOD.nazev)}</strong><br />${esc(OBCHOD.provozovatel)}<br />${esc(OBCHOD.adresa)}</div>
-          <div><small>Osobní odběr</small>Salon Clair<br />Rýznerova 177/10, Únětice, 252 62</div>
+          <div><small>Osobní odběr</small>Salon Clair<br />${esc(OBCHOD.adresa)}</div>
         </div>
       </div>`;
   }
