@@ -12,6 +12,11 @@
   - Kategorie výrobku musí být napsaná stejně jako v seznamu KATEGORIE.
     Výrobek může být ve více kategoriích, napište je do hranatých závorek: kategorie: ["Dekorace", "Podzim"],
   - rucneMalovano: true = u produktu se zobrazí štítek „Ručně malováno“ (řádek můžete vynechat = bez štítku).
+  - skladem: 3 = kolik hotových kusů máte. Na webu se číslo nezobrazí, jen nedovolí dát do košíku víc kusů.
+    skladem: 0 = výrobek nejde objednat (u výrobku se ukáže „Momentálně vyprodáno“).
+    Počet pro každou barvu zvlášť: skladem: { "Bílá": 2, "Černá": 1 },  (barva, která tu chybí, je vyprodaná)
+    Řádek skladem vynechaný = počet se nehlídá (tisknete na objednávku).
+    Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
 */
 
 const OBCHOD = {
@@ -24,9 +29,10 @@ const OBCHOD = {
 };
 
 // Způsoby dopravy nabízené v košíku. adresa: "vydejni-misto" | "dorucovaci" | "zadna"
+// Řádky začínající // jsou skryté. Dopravu znovu zapnete smazáním // na začátku řádku.
 const DOPRAVA = [
-  { nazev: "Zásilkovna – výdejní místo", cena: 79, adresa: "vydejni-misto" },
-  { nazev: "PPL – doručení na adresu", cena: 129, adresa: "dorucovaci" },
+  // { nazev: "Zásilkovna – výdejní místo", cena: 79, adresa: "vydejni-misto" },
+  // { nazev: "PPL – doručení na adresu", cena: 129, adresa: "dorucovaci" },
   { nazev: "Osobní odběr (po domluvě)", cena: 0, adresa: "zadna" },
 ];
 
@@ -55,6 +61,13 @@ const UVODNI_FOTKY = [
   "obrazky/uvod-5.jpg",
 ];
 
+// Trhy, na kterých prodáváte – ukazují se na úvodní stránce v sekci „Potkejte nás na trzích“.
+// Datum pište jako 14. 12. 2026 – trh se po skončení sám skryje. Když je seznam prázdný,
+// ukáže se „Termíny nejbližších trhů brzy doplníme.“ Vzor (smažte // na začátku a upravte):
+// { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
+const TRHY = [
+];
+
 /*
   VZOR NOVÉHO VÝROBKU – zkopírujte část od { po }, (včetně čárky) mezi hranaté závorky
   u PRODUKTY pod tímto rámečkem a upravte údaje. Text za // je jen nápověda, můžete ho smazat.
@@ -71,6 +84,7 @@ const UVODNI_FOTKY = [
     dobaVyroby: "cca 3 pracovní dny",   // nebo "skladem"
     doporuceny: true,                   // true = ukáže se na úvodní stránce
     rucneMalovano: true,                // true = štítek „Ručně malováno“
+    skladem: 3,                         // kolik kusů máte hotových (na webu se nezobrazí)
     popis: "Popis výrobku…",
     barvy: ["Bílá", "Černá"],
     obrazky: ["obrazky/liska-1.jpg"],
@@ -106,7 +120,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/snek-1.jpg"],
   },
   {
     id: "jesterka",
@@ -116,7 +130,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/jesterka-1.jpg", "obrazky/jesterka-2.jpg"],
   },
   {
     id: "had",
@@ -146,7 +160,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/hrib-1.jpg"],
   },
   {
     id: "zalud",
@@ -337,5 +351,15 @@ const PRODUKTY = [
     popis: "",
     barvy: [],
     obrazky: [],
+  },
+  {
+    id: "drak",
+    nazev: "Drak",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: ["obrazky/drak-1.jpg"],
   },
 ];

@@ -11,6 +11,13 @@ Na tento e-mail chodí objednávky z košíku.
   2. Upravte údaje (návod je přímo na začátku souboru) a uložte.
   3. V prohlížeči stiskněte F5.
 
+Kusy skladem:
+  U výrobku v data\produkty.js napište, kolik hotových kusů máte, např. skladem: 3,
+  Číslo se na webu nezobrazí. Zákazník si jen nemůže dát do košíku víc kusů, než máte.
+  skladem: 0, znamená vyprodáno. Počet pro jednotlivé barvy: skladem: { "Bílá": 2, "Černá": 1 },
+  Když řádek skladem u výrobku chybí, počet se nehlídá.
+  Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
+
 Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
   2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
@@ -20,11 +27,17 @@ Fotky v kruhu na úvodní stránce:
   Fotku vyměníte tak, že novou uložíte pod stejným názvem, nebo do seznamu napíšete jiný název.
   Nejlépe sedí čtvercová fotka s výrobkem uprostřed – rohy kruh ořízne.
 
+Trhy na úvodní stránce („Potkejte nás na trzích“):
+  V data\produkty.js najděte seznam TRHY a každý trh napište na vlastní řádek, např.:
+  { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
+  Datum pište jako 14. 12. 2026 – po skončení trhu se sám schová.
+  Když v seznamu není žádný trh, ukáže se „Termíny nejbližších trhů brzy doplníme.“
+
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
 Jak funguje objednávka:
-  Zákazník si vybere barvu, počet kusů a případně napíše poznámku (např. jméno na klíčenku),
-  přidá výrobek do košíku a v košíku vyplní jméno, telefon a dopravu. Po kliknutí na
+  Zákazník si vybere barvu a počet kusů, přidá výrobek do košíku a v košíku vyplní jméno,
+  e-mail, telefon a dopravu (případně poznámku k objednávce). Po kliknutí na
   „Odeslat objednávku e-mailem“ se mu otevře e-mailový program s hotovou objednávkou,
   kterou vám odešle. Pak mu odpovězte s potvrzením a platebními údaji.
   Košík si pamatuje prohlížeč zákazníka, nikam jinam se neukládá.

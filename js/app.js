@@ -7,7 +7,6 @@
   const kc = new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 });
   const barvaPodleNazvu = new Map(BARVY.map((b) => [b.nazev, b]));
   const MAX_KUSU = 99;
-  const MAX_POZNAMKA = 200;
 
   function esc(text) {
     return String(text ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -24,6 +23,26 @@
 
   function barvyProduktu(p) {
     return (p.barvy || []).map((n) => barvaPodleNazvu.get(n)).filter(Boolean);
+  }
+
+  /** Sklad je v produkty.js buď jedno číslo (skladem: 3), nebo počet pro každou barvu (skladem: { "Bílá": 2 }). */
+  function skladPodleBarev(p) {
+    return typeof p.skladem === "object" && p.skladem !== null;
+  }
+
+  /** Kolik kusů máme skladem. Infinity = řádek skladem u výrobku chybí, počet se nehlídá. */
+  function skladem(p, barva) {
+    if (p.skladem === undefined || p.skladem === null || p.skladem === "") return Infinity;
+    const n = skladPodleBarev(p) ? p.skladem[barva] : p.skladem;
+    return Math.max(0, Math.floor(Number(n)) || 0);
+  }
+
+  /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“). */
+  function lzePridat(p, barva, krome) {
+    const vKosiku = kosik
+      .filter((i) => i !== krome && i.id === p.id && (!skladPodleBarev(p) || i.barva === barva))
+      .reduce((s, i) => s + i.pocet, 0);
+    return Math.max(0, Math.min(MAX_KUSU, skladem(p, barva) - vKosiku));
   }
 
   /** Fotka produktu, nebo zástupný obrázek ve stylu FILARA, dokud fotka není. */
@@ -57,6 +76,19 @@
   }
 
   let kosik = nactiKosik();
+
+  /** Když v produkty.js ubude kusů skladem, uberou se i z košíku. Vrací true, pokud se košík změnil. */
+  function orizniKosik() {
+    let zmena = false;
+    kosik = kosik.filter((pol) => {
+      const max = lzePridat(najdiProdukt(pol.id), pol.barva, pol);
+      if (pol.pocet <= max) return true;
+      zmena = true;
+      pol.pocet = max;
+      return max > 0;
+    });
+    return zmena;
+  }
 
   function ulozKosik() {
     try {
@@ -131,19 +163,18 @@
         <h3>${esc(p.nazev)}</h3>
         <div class="product-card-meta">
           <span class="price">${kc.format(p.cena)}</span>
-          <span class="dots" aria-label="${barvy.length} barev">${tecky}${barvy.length > 5 ? `<small>+${barvy.length - 5}</small>` : ""}</span>
+          ${barvy.length ? `<span class="dots" aria-label="Barvy: ${barvy.length}">${tecky}${barvy.length > 5 ? `<small>+${barvy.length - 5}</small>` : ""}</span>` : ""}
         </div>
       </div>
     </a>`;
   }
 
   const ikony = {
-    vrstvy: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" />',
     barvy: '<circle cx="8" cy="9" r="4" /><circle cx="16" cy="9" r="4" /><circle cx="12" cy="16" r="4" />',
-    pero: '<path d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4" />',
     srdce: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z" />',
     stetec: '<path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L13 13.8 10.2 11zM10.2 11c-2.4-.2-4.4 1.6-4.6 4-.1 1.6-.9 2.9-2.6 3.6 2.7 2.1 7.4 2 9.3-.6.9-1.2 1-2.8.7-4.2" />',
     vyzvednuti: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" />',
+    kalendar: '<rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" />',
   };
 
   function stitekMalovano() {
@@ -190,7 +221,7 @@
     const fotky = typeof UVODNI_FOTKY !== "undefined" ? UVODNI_FOTKY : [];
     if (!fotky.length) return ilustrace();
     return `<div class="hero-foto">${fotky
-      .map((src, i) => `<img src="${src}" alt="" class="${i === 0 ? "aktivni" : ""}" />`)
+      .map((src, i) => `<img src="${esc(src)}" alt="" class="${i === 0 ? "aktivni" : ""}" />`)
       .join("")}</div>`;
   }
 
@@ -202,6 +233,35 @@
     fotky[i].classList.remove("aktivni");
     fotky[(i + 1) % fotky.length].classList.add("aktivni");
   }, 4000);
+
+  /** Datum „14. 12. 2026“ z produkty.js jako Date (konec dne), nebo null, když jde o jiný zápis. */
+  function datumTrhu(text) {
+    const m = /^\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/.exec(text || "");
+    return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 23, 59) : null;
+  }
+
+  /** Trhy, kde nás lidé potkají – proběhlé termíny se samy skryjí. */
+  function sekceTrhy() {
+    const trhy = (typeof TRHY !== "undefined" ? TRHY : []).filter((t) => {
+      const d = datumTrhu(t.datum);
+      return !d || d >= new Date();
+    });
+    const seznam = trhy.length
+      ? `<ul class="markets">${trhy
+          .map(
+            (t) => `<li class="card market">
+              <div class="market-date">${ikona("kalendar")}<span>${esc(t.datum)}${t.cas ? `<small>${esc(t.cas)}</small>` : ""}</span></div>
+              <div><h3>${esc(t.nazev)}</h3><p>${ikona("vyzvednuti")}${esc(t.misto)}</p></div>
+            </li>`,
+          )
+          .join("")}</ul>`
+      : `<p class="card markets-empty">${ikona("kalendar")}Termíny nejbližších trhů brzy doplníme.</p>`;
+    return `<section class="container section">
+        <div class="section-head"><h2 class="chrome-text">Potkejte nás na trzích</h2></div>
+        <p class="section-lead">Naše výrobky si můžete prohlédnout, vzít do ruky a rovnou koupit na trzích v okolí.</p>
+        ${seznam}
+      </section>`;
+  }
 
   /* ---------- Stránky ---------- */
 
@@ -241,6 +301,7 @@
       </section>`
           : ""
       }
+      ${sekceTrhy()}
       <section class="container section">
         <div class="card cta">
           <div><h2 class="chrome-text">Máte vlastní nápad?</h2><p>Rádi vytiskneme něco jen pro vás. Ozvěte se nám a domluvíme se.</p></div>
@@ -250,7 +311,7 @@
   }
 
   // Kategorie je součástí adresy (#nabidka/Zvířata), aby fungovalo tlačítko Zpět.
-  // Náhodné pořadí se zamíchá při každém otevření celé nabídky a při přepínání kategorií zůstává stejné.
+  // Celá nabídka se při každém otevření zamíchá (Náhodně), kategorie se otevírá seřazená Od nejnovějšího.
   const stavNabidky = { kategorie: "", razeni: "nahodne", poradi: [] };
 
   function zamichej() {
@@ -268,10 +329,8 @@
 
   function nabidka(kategorie) {
     stavNabidky.kategorie = KATEGORIE.includes(kategorie) ? kategorie : "";
-    if (!stavNabidky.kategorie || stavNabidky.poradi.length !== PRODUKTY.length) {
-      zamichej();
-      stavNabidky.razeni = "nahodne";
-    }
+    if (!stavNabidky.kategorie || stavNabidky.poradi.length !== PRODUKTY.length) zamichej();
+    stavNabidky.razeni = stavNabidky.kategorie ? "nejnovejsi" : "nahodne";
     // Bez vybrané kategorie (klik na „Nabídka“) se ukáže vše; v seznamu jsou jen samotné kategorie.
     const odkazy = KATEGORIE
       .map((k) => {
@@ -376,10 +435,6 @@
             </dl>
             <div class="card buy">
               ${vyberBarvy}
-              <label class="field">
-                <span>Poznámka / text na výrobek (nepovinné)</span>
-                <textarea class="input" id="poznamka" maxlength="${MAX_POZNAMKA}" placeholder="Např. jméno na klíčenku, přání k úpravě…"></textarea>
-              </label>
               <div class="buy-row">
                 <div class="qty">
                   <button type="button" data-zmena="-1" aria-label="Méně">−</button>
@@ -388,6 +443,7 @@
                 </div>
                 <button type="button" class="btn btn-primary" id="pridat">Přidat do košíku</button>
               </div>
+              <p class="hint" id="sklad-info" aria-live="polite" hidden></p>
             </div>
           </div>
         </div>
@@ -408,34 +464,50 @@
 
     let barva = barvyProduktu(p)[0]?.nazev || null;
     let pocet = 1;
+    const vystupPoctu = document.getElementById("pocet");
+    const tlacitko = document.getElementById("pridat");
+    const info = document.getElementById("sklad-info");
+
+    // Počet kusů nepustí nad zásobu skladem (počítají se i kusy, které už jsou v košíku).
+    function obnovPocet() {
+      const max = lzePridat(p, barva);
+      const malo = pocet > max && skladem(p, barva) < Infinity;
+      pocet = Math.max(1, Math.min(max, pocet));
+      vystupPoctu.textContent = max ? pocet : 0;
+      tlacitko.disabled = max === 0;
+      if (max === 0) info.textContent = skladem(p, barva) === 0 ? "Momentálně vyprodáno." : "Všechny kusy, které máme skladem, už máte v košíku.";
+      else info.textContent = "Víc kusů teď skladem nemáme.";
+      info.hidden = max > 0 && !malo;
+    }
+
     app.querySelectorAll("[data-barva]").forEach((btn) =>
       btn.addEventListener("click", () => {
         barva = btn.dataset.barva;
         document.getElementById("nazev-barvy").textContent = barva;
         app.querySelectorAll("[data-barva]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+        obnovPocet();
       }),
     );
-    const vystupPoctu = document.getElementById("pocet");
     app.querySelectorAll("[data-zmena]").forEach((btn) =>
       btn.addEventListener("click", () => {
-        pocet = Math.max(1, Math.min(MAX_KUSU, pocet + Number(btn.dataset.zmena)));
-        vystupPoctu.textContent = pocet;
+        pocet += Number(btn.dataset.zmena);
+        obnovPocet();
       }),
     );
-    document.getElementById("pridat").addEventListener("click", () => {
-      const poleP = document.getElementById("poznamka");
-      pridejDoKosiku({ id: p.id, barva, pocet, poznamka: poleP.value.slice(0, MAX_POZNAMKA) });
+    tlacitko.addEventListener("click", () => {
+      if (!lzePridat(p, barva)) return obnovPocet();
+      pridejDoKosiku({ id: p.id, barva, pocet, poznamka: "" });
       toast(`Přidáno do košíku: ${esc(p.nazev)}${barva ? ` (${esc(barva)})` : ""} × ${pocet} <a href="#kosik">Zobrazit košík →</a>`);
-      poleP.value = "";
       pocet = 1;
-      vystupPoctu.textContent = 1;
+      obnovPocet();
     });
+    obnovPocet();
   }
 
   /* ---------- Košík a objednávka ---------- */
 
   // Rozepsané údaje zákazníka – zůstanou vyplněné i po změně počtu kusů.
-  const udaje = { jmeno: "", telefon: "", doprava: 0, misto: "", ulice: "", mesto: "", psc: "", poznamka: "" };
+  const udaje = { jmeno: "", email: "", telefon: "", doprava: 0, misto: "", ulice: "", mesto: "", psc: "", poznamka: "" };
 
   function kosikStranka() {
     if (kosik.length === 0)
@@ -458,9 +530,11 @@
           <form class="card summary" id="objednavka" novalidate>
             <h2>Objednávka</h2>
             <div class="error-box" id="chyby" role="alert" hidden></div>
-            <label class="field"><span>Jméno a příjmení</span><input class="input" name="jmeno" autocomplete="name" value="${esc(udaje.jmeno)}" /></label>
-            <label class="field"><span>Telefon</span><input class="input" name="telefon" type="tel" autocomplete="tel" placeholder="+420 123 456 789" value="${esc(udaje.telefon)}" /></label>
-            <fieldset class="radio-list" style="margin-top:16px"><legend>Doprava</legend>${dopravy}</fieldset>
+            <p class="hint" style="margin:0 0 12px">Údaje označené <span class="povinne">*</span> jsou povinné.</p>
+            <label class="field"><span>Jméno a příjmení <span class="povinne">*</span></span><input class="input" name="jmeno" autocomplete="name" value="${esc(udaje.jmeno)}" /></label>
+            <label class="field"><span>E-mail <span class="povinne">*</span></span><input class="input" name="email" type="email" autocomplete="email" placeholder="vas@email.cz" value="${esc(udaje.email)}" /></label>
+            <label class="field"><span>Telefon <span class="povinne">*</span></span><input class="input" name="telefon" type="tel" autocomplete="tel" placeholder="+420 123 456 789" value="${esc(udaje.telefon)}" /></label>
+            <fieldset class="radio-list" style="margin-top:16px"><legend>Doprava <span class="povinne">*</span></legend>${dopravy}</fieldset>
             <div id="adresa"></div>
             <label class="field"><span>Poznámka k objednávce</span><textarea class="input" name="poznamka" maxlength="1000">${esc(udaje.poznamka)}</textarea></label>
             <div class="totals" id="soucty"></div>
@@ -493,7 +567,7 @@
               <div class="qty qty-small">
                 <button type="button" data-polozka="${n}" data-zmena="-1" aria-label="Méně">−</button>
                 <output>${pol.pocet}</output>
-                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více">+</button>
+                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více" ${pol.pocet >= lzePridat(p, pol.barva, pol) ? 'disabled title="Víc kusů skladem nemáme"' : ""}>+</button>
               </div>
               <button type="button" class="remove" data-odebrat="${n}">Odebrat</button>
             </div>
@@ -507,13 +581,13 @@
     const typ = DOPRAVA[udaje.doprava].adresa;
     const el = document.getElementById("adresa");
     if (typ === "vydejni-misto")
-      el.innerHTML = `<label class="field"><span>Výdejní místo Zásilkovny</span><input class="input" name="misto" value="${esc(udaje.misto)}" placeholder="Např. Praha 4, Budějovická 15 – Albert" /></label>
+      el.innerHTML = `<label class="field"><span>Výdejní místo Zásilkovny <span class="povinne">*</span></span><input class="input" name="misto" value="${esc(udaje.misto)}" placeholder="Např. Praha 4, Budějovická 15 – Albert" /></label>
         <p class="hint" style="margin-bottom:14px">Výdejní místo najdete na <a class="link" href="https://www.zasilkovna.cz/pobocky" target="_blank" rel="noreferrer">zasilkovna.cz/pobocky</a>.</p>`;
     else if (typ === "dorucovaci")
-      el.innerHTML = `<label class="field"><span>Ulice a číslo popisné</span><input class="input" name="ulice" autocomplete="street-address" value="${esc(udaje.ulice)}" /></label>
+      el.innerHTML = `<label class="field"><span>Ulice a číslo popisné <span class="povinne">*</span></span><input class="input" name="ulice" autocomplete="street-address" value="${esc(udaje.ulice)}" /></label>
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin:14px 0">
-          <label class="field" style="margin:0"><span>Město</span><input class="input" name="mesto" autocomplete="address-level2" value="${esc(udaje.mesto)}" /></label>
-          <label class="field" style="margin:0"><span>PSČ</span><input class="input" name="psc" autocomplete="postal-code" inputmode="numeric" value="${esc(udaje.psc)}" /></label>
+          <label class="field" style="margin:0"><span>Město <span class="povinne">*</span></span><input class="input" name="mesto" autocomplete="address-level2" value="${esc(udaje.mesto)}" /></label>
+          <label class="field" style="margin:0"><span>PSČ <span class="povinne">*</span></span><input class="input" name="psc" autocomplete="postal-code" inputmode="numeric" value="${esc(udaje.psc)}" /></label>
         </div>`;
     else el.innerHTML = "";
     if (typ !== "dorucovaci") el.insertAdjacentHTML("beforeend", '<div style="height:14px"></div>');
@@ -550,6 +624,7 @@ Doprava: ${d.nazev} – ${d.cena ? kc.format(d.cena) : "zdarma"}
 Celkem: ${kc.format(mezisoucet() + d.cena)}
 
 Jméno: ${udaje.jmeno}
+E-mail: ${udaje.email}
 Telefon: ${udaje.telefon}${adresa}${udaje.poznamka ? `\nPoznámka: ${udaje.poznamka}` : ""}
 
 Prosím o potvrzení objednávky a platební údaje.
@@ -561,6 +636,7 @@ Děkuji`;
     const pole = [];
     const typ = DOPRAVA[udaje.doprava].adresa;
     if (udaje.jmeno.trim().length < 3) chyby.push("Vyplňte jméno a příjmení."), pole.push("jmeno");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(udaje.email.trim())) chyby.push("Zadejte platný e-mail."), pole.push("email");
     if (!/^\+?[0-9 ]{9,16}$/.test(udaje.telefon.trim())) chyby.push("Zadejte platné telefonní číslo."), pole.push("telefon");
     if (typ === "vydejni-misto" && udaje.misto.trim().length < 3) chyby.push("Zadejte výdejní místo Zásilkovny."), pole.push("misto");
     if (typ === "dorucovaci") {
@@ -592,7 +668,7 @@ Děkuji`;
         if (kosik.length === 0) return zobraz();
       } else if (btn.dataset.zmena) {
         const pol = kosik[Number(btn.dataset.polozka)];
-        pol.pocet = Math.max(1, Math.min(MAX_KUSU, pol.pocet + Number(btn.dataset.zmena)));
+        pol.pocet = Math.max(1, Math.min(lzePridat(najdiProdukt(pol.id), pol.barva, pol), pol.pocet + Number(btn.dataset.zmena)));
         ulozKosik();
       }
       vykresliPolozky();
@@ -653,7 +729,7 @@ Děkuji`;
           <li>Tiskneme z PLA filamentu, materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
           <li>Každý kus ručně dočistíme a zkontrolujeme.</li>
           <li>Některé modely dokreslujeme ručně akvarelem, a tak každý dostane svůj vlastní charakter.</li>
-          <li>Výrobky, které máme skladem lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
+          <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, Únětice, 252 62).</li>
         </ul>
       </div>`;
   }
@@ -678,9 +754,19 @@ Děkuji`;
   /* ---------- Přepínání stránek ---------- */
 
   function zobraz() {
-    const hash = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+    // Poškozená adresa (např. ručně přepsané %) nesmí shodit celý web – ukáže se „Stránka nenalezena“.
+    let hash;
+    try {
+      hash = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+    } catch {
+      hash = "nenalezeno";
+    }
     const [stranka, param] = hash.split("/");
     document.title = `${OBCHOD.nazev} – výrobky z 3D tiskárny`;
+    if (orizniKosik()) {
+      ulozKosik();
+      toast("Některé kusy už nemáme skladem, proto jsme je z košíku ubrali.");
+    }
 
     if (!stranka) app.innerHTML = uvod();
     else if (stranka === "nabidka" || stranka === "produkty") {
