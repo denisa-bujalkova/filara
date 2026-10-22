@@ -1,0 +1,51 @@
+JAK WEB OTEVŘÍT A UPRAVIT
+=========================
+
+Otevření: dvakrát klikněte na index.html. Nic se neinstaluje.
+
+DŮLEŽITÉ: V data\produkty.js přepište e-mail v části OBCHOD na svůj.
+Na tento e-mail chodí objednávky z košíku.
+
+Úprava výrobků, cen, barev, dopravy a kontaktu:
+  1. Klikněte pravým tlačítkem na data\produkty.js > Otevřít v programu > Poznámkový blok.
+  2. Upravte údaje (návod je přímo na začátku souboru) a uložte.
+  3. V prohlížeči stiskněte F5.
+
+Kusy skladem:
+  U výrobku v data\produkty.js napište, kolik hotových kusů máte, např. skladem: 3,
+  Číslo se na webu nezobrazí. Zákazník si jen nemůže dát do košíku víc kusů, než máte.
+  skladem: 0, znamená vyprodáno – místo ceny se ukáže červeně „Vyprodáno“ a výrobek je v nabídce
+  vždy na konci. Počet pro jednotlivé barvy: skladem: { "Bílá": 2, "Černá": 1 },
+  Když řádek skladem u výrobku chybí, počet se nehlídá.
+  Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
+
+Fotky výrobků:
+  1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
+  2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
+
+Fotky v kruhu na úvodní stránce:
+  Střídají se fotky ze seznamu UVODNI_FOTKY v data\produkty.js (teď obrazky\uvod-1.jpg až uvod-5.jpg).
+  Fotku vyměníte tak, že novou uložíte pod stejným názvem, nebo do seznamu napíšete jiný název.
+  Nejlépe sedí čtvercová fotka s výrobkem uprostřed – rohy kruh ořízne.
+
+Trhy na úvodní stránce (pruh „Potkejte nás na trzích“ pod úvodem):
+  V data\produkty.js najděte seznam TRHY a každý trh napište na vlastní řádek, např.:
+  { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
+  Datum pište jako 14. 12. 2026 – po skončení trhu se sám schová.
+  Když v seznamu není žádný nadcházející trh, pruh s trhy se na úvodu vůbec neukáže.
+  Víc dní: datum: "28.–29. 11. 2026", odkaz na stránku akce (nepovinný): odkaz: "https://...",
+
+Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
+
+Jak funguje objednávka:
+  Zákazník si vybere barvu a počet kusů, přidá výrobek do košíku a v košíku vyplní jméno,
+  e-mail, telefon a dopravu (případně poznámku k objednávce). Po kliknutí na
+  „Odeslat objednávku e-mailem“ se mu otevře e-mailový program s hotovou objednávkou,
+  kterou vám odešle. Pak mu odpovězte s potvrzením a platebními údaji.
+  Košík si pamatuje prohlížeč zákazníka, nikam jinam se neukládá.
+
+Když se po úpravě web zobrazí prázdný, je v produkty.js nejspíš chyba v zápisu
+(chybějící čárka nebo uvozovka). Zkontrolujte místo, které jste naposledy měnili.
+
+Zveřejnění na internetu: celou složku "staticky-web" stačí nahrát na libovolný
+webhosting nebo zdarma např. na Netlify Drop (app.netlify.com/drop) či GitHub Pages.
