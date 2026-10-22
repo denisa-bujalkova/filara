@@ -44,6 +44,16 @@ const BARVY = [
 
 const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost"];
 
+// Fotky, které se střídají v kruhu na úvodní stránce (nejlépe čtvercové, výrobek uprostřed).
+// Když seznam necháte prázdný [], ukáže se místo nich obrázek tiskárny.
+const UVODNI_FOTKY = [
+  "obrazky/uvod-1.jpg",
+  "obrazky/uvod-2.jpg",
+  "obrazky/uvod-3.jpg",
+  "obrazky/uvod-4.jpg",
+  "obrazky/uvod-5.jpg",
+];
+
 /*
   VZOR NOVÉHO VÝROBKU – zkopírujte část od { po }, (včetně čárky) mezi hranaté závorky
   u PRODUKTY pod tímto rámečkem a upravte údaje. Text za // je jen nápověda, můžete ho smazat.

@@ -272,7 +272,7 @@ textarea {
 /* ---------- Patička ---------- */
 
 .footer {
-  margin-top: 96px;
+  margin-top: 64px;
   border-top: 1px solid var(--line);
   background: #090b0d;
   font-size: 14px;
@@ -281,9 +281,9 @@ textarea {
 
 .footer-inner {
   display: grid;
-  gap: 24px;
-  padding-top: 40px;
-  padding-bottom: 40px;
+  gap: 16px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 @media (min-width: 640px) {
@@ -293,11 +293,11 @@ textarea {
 }
 
 .footer p {
-  margin: 12px 0 6px;
+  margin: 6px 0 0;
 }
 
 .footer-inner > div:last-child p {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .footer-title {
@@ -312,7 +312,7 @@ textarea {
 .footer-copy {
   margin: 0;
   border-top: 1px solid var(--line);
-  padding: 16px;
+  padding: 8px 16px;
   text-align: center;
   font-size: 12px;
   color: var(--subtle);
@@ -507,6 +507,7 @@ textarea.input {
 
 .hero-inner {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 40px;
   padding-top: 56px;
@@ -565,6 +566,37 @@ textarea.input {
   width: 100%;
   height: auto;
   filter: drop-shadow(0 20px 40px rgba(31, 179, 214, 0.25));
+}
+
+/* Fotky v kruhu s chromovým okrajem jako v logu */
+.hero-foto {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #cfd6dc 45%, #7e8892 60%, #e3e8ec);
+  box-shadow: 0 20px 40px rgba(31, 179, 214, 0.25);
+}
+
+.hero-foto img {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  background: #eef0f2;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.hero-foto img.aktivni {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-foto img {
+    transition: none;
+  }
 }
 
 .benefits {

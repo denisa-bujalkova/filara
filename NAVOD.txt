@@ -15,6 +15,11 @@ Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
   2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
 
+Fotky v kruhu na úvodní stránce:
+  Střídají se fotky ze seznamu UVODNI_FOTKY v data\produkty.js (teď obrazky\uvod-1.jpg až uvod-5.jpg).
+  Fotku vyměníte tak, že novou uložíte pod stejným názvem, nebo do seznamu napíšete jiný název.
+  Nejlépe sedí čtvercová fotka s výrobkem uprostřed – rohy kruh ořízne.
+
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
 Jak funguje objednávka:

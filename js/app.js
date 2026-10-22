@@ -178,6 +178,24 @@
     </svg>`;
   }
 
+  /** Kruh se střídajícími se fotkami výrobků; bez fotek ilustrace tiskárny. */
+  function uvodniFotky() {
+    const fotky = typeof UVODNI_FOTKY !== "undefined" ? UVODNI_FOTKY : [];
+    if (!fotky.length) return ilustrace();
+    return `<div class="hero-foto">${fotky
+      .map((src, i) => `<img src="${src}" alt="" class="${i === 0 ? "aktivni" : ""}" />`)
+      .join("")}</div>`;
+  }
+
+  // Každé 4 s přepne fotku v kruhu na úvodu (když úvod není otevřený, nic nedělá).
+  setInterval(() => {
+    const fotky = document.querySelectorAll(".hero-foto img");
+    if (fotky.length < 2) return;
+    const i = [...fotky].findIndex((f) => f.classList.contains("aktivni"));
+    fotky[i].classList.remove("aktivni");
+    fotky[(i + 1) % fotky.length].classList.add("aktivni");
+  }, 4000);
+
   /* ---------- Stránky ---------- */
 
   function uvod() {
@@ -192,7 +210,6 @@
       <section class="hero">
         <div class="container hero-inner">
           <div>
-            <span class="badge">Rodinná 3D dílna</span>
             <h1><span class="chrome-text">Originální výrobky</span><br /><span class="accent-text">vrstvu po vrstvě</span></h1>
             <p>Dekorace, hračky a praktické pomocníky do domácnosti tiskneme s láskou na našich 3D tiskárnách. Vyberte si barvu a nechte si výrobek přizpůsobit.</p>
             <div class="hero-actions">
@@ -200,7 +217,7 @@
               <a href="#o-nas" class="btn btn-secondary">Kdo jsme</a>
             </div>
           </div>
-          <div class="hero-art">${ilustrace()}</div>
+          <div class="hero-art">${uvodniFotky()}</div>
         </div>
       </section>
       <section class="container benefits">
