@@ -3,7 +3,10 @@ JAK WEB OTEVŘÍT A UPRAVIT
 
 Otevření: dvakrát klikněte na index.html. Nic se neinstaluje.
 
-Úprava výrobků, cen, barev a kontaktu:
+DŮLEŽITÉ: V data\produkty.js přepište e-mail v části OBCHOD na svůj.
+Na tento e-mail chodí objednávky z košíku.
+
+Úprava výrobků, cen, barev, dopravy a kontaktu:
   1. Klikněte pravým tlačítkem na data\produkty.js > Otevřít v programu > Poznámkový blok.
   2. Upravte údaje (návod je přímo na začátku souboru) a uložte.
   3. V prohlížeči stiskněte F5.
@@ -11,6 +14,15 @@ Otevření: dvakrát klikněte na index.html. Nic se neinstaluje.
 Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
   2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
+
+Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
+
+Jak funguje objednávka:
+  Zákazník si vybere barvu, počet kusů a případně napíše poznámku (např. jméno na klíčenku),
+  přidá výrobek do košíku a v košíku vyplní jméno, telefon a dopravu. Po kliknutí na
+  „Odeslat objednávku e-mailem“ se mu otevře e-mailový program s hotovou objednávkou,
+  kterou vám odešle. Pak mu odpovězte s potvrzením a platebními údaji.
+  Košík si pamatuje prohlížeč zákazníka, nikam jinam se neukládá.
 
 Když se po úpravě web zobrazí prázdný, je v produkty.js nejspíš chyba v zápisu
 (chybějící čárka nebo uvozovka). Zkontrolujte místo, které jste naposledy měnili.
