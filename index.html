@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Výrobky z 3D tiskárny</title>
+    <meta name="description" content="Rodinná dílna vyrábějící originální dekorace, hračky a praktické doplňky na 3D tiskárně." />
+    <link rel="stylesheet" href="css/styly.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header-inner">
+        <a href="#" class="logo">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 10v10M3 7l9 5 9-5" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span data-shop-name></span>
+        </a>
+        <nav class="nav">
+          <a href="#produkty">Produkty</a>
+          <a href="#o-nas">O nás</a>
+          <a href="#kontakt">Kontakt</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="app"></main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div>
+          <p class="footer-title" data-shop-name></p>
+          <p>Rodinná dílna. Každý výrobek tiskneme s péčí na našich 3D tiskárnách.</p>
+        </div>
+        <div>
+          <p class="footer-title">Kontakt</p>
+          <p><a data-shop-email></a></p>
+          <p data-shop-phone></p>
+        </div>
+      </div>
+      <p class="footer-copy">© <span id="year"></span> <span data-shop-name></span></p>
+    </footer>
+
+    <noscript><p class="container">Pro zobrazení katalogu povolte v prohlížeči JavaScript.</p></noscript>
+    <script src="data/produkty.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

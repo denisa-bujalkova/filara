@@ -1,0 +1,19 @@
+JAK WEB OTEVŘÍT A UPRAVIT
+=========================
+
+Otevření: dvakrát klikněte na index.html. Nic se neinstaluje.
+
+Úprava výrobků, cen, barev a kontaktu:
+  1. Klikněte pravým tlačítkem na data\produkty.js > Otevřít v programu > Poznámkový blok.
+  2. Upravte údaje (návod je přímo na začátku souboru) a uložte.
+  3. V prohlížeči stiskněte F5.
+
+Fotky výrobků:
+  1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
+  2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
+
+Když se po úpravě web zobrazí prázdný, je v produkty.js nejspíš chyba v zápisu
+(chybějící čárka nebo uvozovka). Zkontrolujte místo, které jste naposledy měnili.
+
+Zveřejnění na internetu: celou složku "staticky-web" stačí nahrát na libovolný
+webhosting nebo zdarma např. na Netlify Drop (app.netlify.com/drop) či GitHub Pages.
