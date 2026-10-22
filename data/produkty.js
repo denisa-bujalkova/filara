@@ -63,10 +63,17 @@ const UVODNI_FOTKY = [
 
 // Trhy, na kterých prodáváte – ukazují se na úvodní stránce v sekci „Potkejte nás na trzích“.
 // Datum pište jako 14. 12. 2026 – trh se po skončení sám skryje. Když je seznam prázdný,
-// ukáže se „Termíny nejbližších trhů brzy doplníme.“ Vzor (smažte // na začátku a upravte):
+// pruh s trhy se na úvodu vůbec neukáže. Vzor (smažte // na začátku a upravte):
 // { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
+// Víc dní: datum: "28.–29. 11. 2026". Odkaz na stránku akce (nepovinný): odkaz: "https://...",
 const TRHY = [
-  { datum: "13. 12. 2026", nazev: "Vánoční trh", misto: "Únětice" },
+  {
+    datum: "28.–29. 11. 2026",
+    cas: "10–18 h",
+    nazev: "Vánoční trhy v Únětickém pivovaru",
+    misto: "Únětický pivovar (stodola), Rýznerova 19, Únětice",
+    odkaz: "https://www.unetickypivovar.cz/akce/vanocni-trhy-v-unetickem-pivovaru",
+  },
 ];
 
 /*

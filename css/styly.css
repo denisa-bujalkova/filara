@@ -321,9 +321,10 @@ textarea {
 .footer-copy {
   margin: 0;
   border-top: 1px solid var(--line);
-  padding: 4px 16px;
+  padding: 1px 16px;
   text-align: center;
-  font-size: 11px;
+  font-size: 9px;
+  line-height: 1.2;
   color: var(--subtle);
 }
 
@@ -693,92 +694,91 @@ textarea.input {
   color: var(--muted);
 }
 
-/* Trhy na úvodní stránce */
-.section-lead {
-  max-width: 640px;
-  margin: -8px 0 20px;
+/* Trhy na úvodní stránce – úzký pruh pod úvodem, nad kartami s přednostmi */
+.markets-section {
+  padding-top: 8px;
+}
+
+.market-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+  padding: 16px 20px;
+}
+
+.market-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent-gradient);
+}
+
+.market-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.market-banner-head strong,
+.market-list strong {
+  display: block;
+  color: var(--text);
+}
+
+.market-banner-head span,
+.market-list span {
+  display: block;
+  font-size: 14px;
   color: var(--muted);
 }
 
-.markets {
+.market-banner-icon {
   display: grid;
-  gap: 16px;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(31, 179, 214, 0.12);
+  color: var(--cyan);
+}
+
+.market-banner-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.market-list {
+  display: grid;
+  flex: 1 1 360px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-@media (min-width: 640px) {
-  .markets {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .markets {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.market {
+.market-list li {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-}
-
-.market-date {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  color: var(--cyan);
+  justify-content: space-between;
+  gap: 4px 16px;
 }
 
-.market-date small {
-  display: block;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.market svg {
-  flex: none;
-  width: 20px;
-  height: 20px;
-}
-
-.market h3 {
-  font-size: 16px;
-}
-
-.market p {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 4px 0 0;
+.market-list .link {
   font-size: 14px;
-  color: var(--muted);
+  white-space: nowrap;
 }
 
-.market p svg {
-  width: 16px;
-  height: 16px;
-}
-
-.markets-empty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 16px 20px;
-  color: var(--muted);
-}
-
-.markets-empty svg {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  color: var(--cyan);
+@media (min-width: 768px) {
+  .market-list {
+    border-left: 1px solid var(--line);
+    padding-left: 32px;
+  }
 }
 
 /* ---------- Nabídka ---------- */

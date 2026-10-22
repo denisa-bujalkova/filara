@@ -234,9 +234,9 @@
     fotky[(i + 1) % fotky.length].classList.add("aktivni");
   }, 4000);
 
-  /** Datum „14. 12. 2026“ z produkty.js jako Date (konec dne), nebo null, když jde o jiný zápis. */
+  /** Poslední den trhu („14. 12. 2026“ i „28.–29. 11. 2026“) jako Date (konec dne), nebo null, když jde o jiný zápis. */
   function datumTrhu(text) {
-    const m = /^\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/.exec(text || "");
+    const m = [...String(text || "").matchAll(/(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/g)].pop();
     return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 23, 59) : null;
   }
 
@@ -246,20 +246,23 @@
       const d = datumTrhu(t.datum);
       return !d || d >= new Date();
     });
-    const seznam = trhy.length
-      ? `<ul class="markets">${trhy
-          .map(
-            (t) => `<li class="card market">
-              <div class="market-date">${ikona("kalendar")}<span>${esc(t.datum)}${t.cas ? `<small>${esc(t.cas)}</small>` : ""}</span></div>
-              <div><h3>${esc(t.nazev)}</h3><p>${ikona("vyzvednuti")}${esc(t.misto)}</p></div>
-            </li>`,
-          )
-          .join("")}</ul>`
-      : `<p class="card markets-empty">${ikona("kalendar")}Termíny nejbližších trhů brzy doplníme.</p>`;
-    return `<section class="container section">
-        <div class="section-head"><h2 class="chrome-text">Potkejte nás na trzích</h2></div>
-        <p class="section-lead">Naše výrobky si můžete prohlédnout, vzít do ruky a rovnou koupit na trzích v okolí.</p>
-        ${seznam}
+    // Bez nadcházejícího trhu se pruh vůbec neukáže.
+    if (!trhy.length) return "";
+    return `<section class="container markets-section">
+        <div class="card market-banner">
+          <div class="market-banner-head">
+            <span class="market-banner-icon">${ikona("kalendar")}</span>
+            <div><strong>Potkejte nás na trzích</strong><span>Výrobky si u nás můžete prohlédnout a rovnou koupit.</span></div>
+          </div>
+          <ul class="market-list">${trhy
+            .map(
+              (t) => `<li>
+                <div><strong>${esc(t.nazev)}</strong><span>${[t.datum, t.cas, t.misto].filter(Boolean).map(esc).join(" · ")}</span></div>
+                ${t.odkaz ? `<a class="link" href="${esc(t.odkaz)}" target="_blank" rel="noreferrer">Více o akci →</a>` : ""}
+              </li>`,
+            )
+            .join("")}</ul>
+        </div>
       </section>`;
   }
 
@@ -269,8 +272,8 @@
     const doporucene = PRODUKTY.filter((p) => p.doporuceny);
     const vyhody = [
       ["srdce", "Rodinná výroba", "Každý výrobek ručně dočistíme a zkontrolujeme."],
-      ["barvy", "Vyberte si barvu", "Barevné variace u každého výrobku."],
-      ["stetec", "Ručně malováno", "Některé výrobky malujeme ručně akvarelem, a tak je každý kus originál."],
+      ["barvy", "Barevné variace", "Většina výrobků k dispozici v několika barvách."],
+      ["stetec", "Ruční práce", "Některé výrobky malujeme ručně akvarelem, a tak je každý kus originál."],
       ["vyzvednuti", "Osobní odběr", "Výrobky skladem si můžete vyzvednout v Salonu Clair v Úněticích."],
     ];
     return `
@@ -287,6 +290,7 @@
           <div class="hero-art">${uvodniFotky()}</div>
         </div>
       </section>
+      ${sekceTrhy()}
       <section class="container benefits">
         ${vyhody.map(([ik, t, d]) => `<div class="card benefit"><div class="benefit-icon">${ikona(ik)}</div><h3>${t}</h3><p>${d}</p></div>`).join("")}
       </section>
@@ -301,7 +305,6 @@
       </section>`
           : ""
       }
-      ${sekceTrhy()}
       <section class="container section">
         <div class="card cta">
           <div><h2 class="chrome-text">Máte vlastní nápad?</h2><p>Rádi vytiskneme něco jen pro vás. Ozvěte se nám a domluvíme se.</p></div>

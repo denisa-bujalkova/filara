@@ -27,11 +27,12 @@ Fotky v kruhu na úvodní stránce:
   Fotku vyměníte tak, že novou uložíte pod stejným názvem, nebo do seznamu napíšete jiný název.
   Nejlépe sedí čtvercová fotka s výrobkem uprostřed – rohy kruh ořízne.
 
-Trhy na úvodní stránce („Potkejte nás na trzích“):
+Trhy na úvodní stránce (pruh „Potkejte nás na trzích“ pod úvodem):
   V data\produkty.js najděte seznam TRHY a každý trh napište na vlastní řádek, např.:
   { datum: "14. 12. 2026", cas: "9–16 h", nazev: "Vánoční trh", misto: "Únětice, náves" },
   Datum pište jako 14. 12. 2026 – po skončení trhu se sám schová.
-  Když v seznamu není žádný trh, ukáže se „Termíny nejbližších trhů brzy doplníme.“
+  Když v seznamu není žádný nadcházející trh, pruh s trhy se na úvodu vůbec neukáže.
+  Víc dní: datum: "28.–29. 11. 2026", odkaz na stránku akce (nepovinný): odkaz: "https://...",
 
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
