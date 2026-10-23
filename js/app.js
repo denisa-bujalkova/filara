@@ -743,6 +743,16 @@ Děkuji`;
       </div>`;
   }
 
+  /** Odkaz na Instagram – jen bílá ikonka (jméno účtu je v popisku pro myš a čtečky); v produkty.js stačí jméno účtu (s @ i bez, nebo celá adresa). */
+  function odkazInstagram() {
+    const ucet = String(OBCHOD.instagram || "")
+      .trim()
+      .replace(/^@/, "")
+      .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, "")
+      .replace(/\/.*$/, "");
+    return `<a class="instagram" aria-label="Instagram @${esc(ucet)}" title="Instagram @${esc(ucet)}" href="https://www.instagram.com/${encodeURIComponent(ucet)}/" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg></a>`;
+  }
+
   function kontakt() {
     return `
       <div class="container page prose">
@@ -752,6 +762,7 @@ Děkuji`;
           <div><small>Telefon</small><strong>${esc(OBCHOD.telefon)}</strong></div>
           <div><small>Provozovatel</small><strong>${esc(OBCHOD.nazev)}</strong><br />${esc(OBCHOD.provozovatel)}<br />${esc(OBCHOD.adresa)}</div>
           <div><small>Osobní odběr</small>Salon Clair<br />${esc(OBCHOD.adresa)}</div>
+          ${OBCHOD.instagram ? `<div><small>Instagram</small><strong>${odkazInstagram()}</strong></div>` : ""}
         </div>
       </div>`;
   }
@@ -805,6 +816,10 @@ Děkuji`;
     el.href = `mailto:${OBCHOD.email}`;
   });
   document.querySelectorAll("[data-shop-phone]").forEach((el) => (el.textContent = OBCHOD.telefon));
+  document.querySelectorAll("[data-shop-instagram]").forEach((el) => {
+    el.hidden = !OBCHOD.instagram;
+    if (OBCHOD.instagram) el.innerHTML = odkazInstagram();
+  });
   document.getElementById("year").textContent = new Date().getFullYear();
 
   // Klik na logo/název vždy vrátí na úvod – i když už na úvodu jsme (odroluje nahoru).

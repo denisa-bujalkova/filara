@@ -327,6 +327,30 @@ textarea {
   color: var(--cyan);
 }
 
+/* Odkaz na Instagram – ikonka vždy bílá */
+.instagram {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.instagram svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  color: #fff;
+  transition: opacity 0.15s;
+}
+
+.instagram:hover svg {
+  opacity: 0.75;
+}
+
+.footer .instagram svg {
+  width: 18px;
+  height: 18px;
+}
+
 .footer-copy {
   margin: 0;
   border-top: 1px solid var(--line);
