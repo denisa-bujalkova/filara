@@ -35,6 +35,9 @@ Trhy na úvodní stránce (pruh „Potkejte nás na trzích“ pod úvodem):
   Když v seznamu není žádný nadcházející trh, pruh s trhy se na úvodu vůbec neukáže.
   Víc dní: datum: "28.–29. 11. 2026", odkaz na stránku akce (nepovinný): odkaz: "https://...",
 
+Instagram: v data\produkty.js v části OBCHOD napište jméno účtu, např. instagram: "_filara_print",
+  Odkaz s bílou ikonkou se ukáže na stránce Kontakt a ve spodní liště. Prázdné "" = bez odkazu.
+
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
 Jak funguje objednávka:
