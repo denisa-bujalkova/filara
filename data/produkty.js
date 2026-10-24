@@ -58,6 +58,10 @@ const BARVY = [
   { nazev: "Modrá", hex: "#2563EB" },
   { nazev: "Fialová", hex: "#7C3AED" },
   { nazev: "Růžová", hex: "#EC4899" },
+  { nazev: "Béžová", hex: "#F5F5DC" },
+  { nazev: "Vínová", hex: "#722F37" },
+  { nazev: "Tmavě hnědá", hex: "#5A2D00" },
+  { nazev: "Světle hnědá", hex: "#CAA580" },
 ];
 
 const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Hračky", "Klíčenky"];
@@ -227,7 +231,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["světle hnědá", "tmavě hnědá"],
+    barvy: ["Světle hnědá", "Tmavě hnědá"],
     obrazky: ["obrazky/hrib-1.jpg"],
   },
   {
@@ -261,7 +265,7 @@ const PRODUKTY = [
     cena: 80,
     material: "PLA",
     popis: "",
-    barvy: ["béžová", "oranžová", "zelená"],
+    barvy: ["Béžová", "Oranžová", "Zelená"],
     obrazky: [],
   },
   {
@@ -670,7 +674,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["vínová", "zelená"],
+    barvy: ["Vínová", "Zelená"],
     obrazky: [],
   },
   {
@@ -680,7 +684,7 @@ const PRODUKTY = [
     cena: 190,
     material: "PLA",
     popis: "",
-    barvy: ["béžová", "červená", "černá"],
+    barvy: ["Béžová", "Červená", "Černá"],
     obrazky: [],
   },
   {
@@ -711,7 +715,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["bílá", "zelená", "červená", "zlatá"],
+    barvy: ["Bílá", "Zelená", "Červená", "Zlatá"],
     obrazky: [],
   },
   {
@@ -725,7 +729,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["žlutá", "béžová"],
+    barvy: ["Žlutá", "Béžová"],
     obrazky: [],
   },
   {
@@ -738,7 +742,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["béžová", "zelená", "vínová"],
+    barvy: ["Béžová", "Zelená", "Vínová"],
     obrazky: [],
   },
   {
