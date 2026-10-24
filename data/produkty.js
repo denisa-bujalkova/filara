@@ -117,7 +117,6 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 120,
     material: "PLA",
-    rucneMalovano: true,
     popis: `
       3D tištěný flexibilní vlk
 
@@ -139,7 +138,6 @@ const PRODUKTY = [
       Autor modelu / design: KOGI3D
     `,
     barvy: [],
-    skladem: 0,
     obrazky: [],
   },
   {
@@ -216,7 +214,7 @@ const PRODUKTY = [
     cena: 150,
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["oranžová", "vínová"],
     obrazky: [],
   },
   {
@@ -229,7 +227,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["světle hnědá", "tmavě hnědá"],
     obrazky: ["obrazky/hrib-1.jpg"],
   },
   {
@@ -253,7 +251,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["Žlutá", "Oranžová"],
     obrazky: [],
   },
   {
@@ -263,7 +261,7 @@ const PRODUKTY = [
     cena: 80,
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["béžová", "oranžová", "zelená"],
     obrazky: [],
   },
   {
@@ -358,8 +356,8 @@ const PRODUKTY = [
     nazev: "Drak trnitý",
     kategorie: "Zvířata",
     velikosti: [
-      { nazev: "S", cena: 290 },
-      { nazev: "M", cena: 490 },
+      { nazev: "Malý", cena: 290 },
+      { nazev: "Velký", cena: 490 },
     ],
     material: "PLA",
     popis: "",
@@ -371,8 +369,8 @@ const PRODUKTY = [
     nazev: "Sněhová vločka",
     kategorie: "Vánoce",
     velikosti: [
-      { nazev: "S", cena: 40 },
-      { nazev: "L", cena: 90 },
+      { nazev: "Malá", cena: 40 },
+      { nazev: "Velká", cena: 90 },
     ],
     material: "PLA",
     popis: "",
@@ -432,7 +430,6 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 150,
     material: "PLA",
-    rucneMalovano: true,
     popis: `
       3D tištěná flexibilní žába
 
@@ -464,7 +461,6 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 190,
     material: "PLA",
-    rucneMalovano: true,
     popis: `
       3D tištěný flexibilní kůň
 
@@ -495,8 +491,8 @@ const PRODUKTY = [
     nazev: "Had trnitý",
     kategorie: "Zvířata",
     velikosti: [
-      { nazev: "S", cena: 250 },
-      { nazev: "L", cena: 490 },
+      { nazev: "Malý", cena: 250 },
+      { nazev: "Velký", cena: 490 },
     ],
     material: "PLA",
     popis: `
@@ -632,9 +628,9 @@ const PRODUKTY = [
     nazev: "Dračí vejce",
     kategorie: "Zvířata",
     velikosti: [
-      { nazev: "S", cena: 350 },
-      { nazev: "M", cena: 490 },
-      { nazev: "S drakem", cena: 790 },
+      { nazev: "Malý", cena: 350 },
+      { nazev: "Velký", cena: 490 },
+      { nazev: "+ drak", cena: 790 },
     ],
     material: "PLA",
     popis: "",
@@ -656,8 +652,8 @@ const PRODUKTY = [
     nazev: "Realistický stromek s hvězdou",
     kategorie: "Vánoce",
     velikosti: [
-      { nazev: "S", cena: 80 },
-      { nazev: "L", cena: 120 },
+      { nazev: "Malý", cena: 80 },
+      { nazev: "Velký", cena: 120 },
     ],
     material: "PLA",
     popis: "",
@@ -669,12 +665,12 @@ const PRODUKTY = [
     nazev: "Louskáček",
     kategorie: "Vánoce",
     velikosti: [
-      { nazev: "S", cena: 80 },
-      { nazev: "L", cena: 150 },
+      { nazev: "Malý", cena: 80 },
+      { nazev: "Velký", cena: 150 },
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["vínová", "zelená"],
     obrazky: [],
   },
   {
@@ -684,7 +680,7 @@ const PRODUKTY = [
     cena: 190,
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["béžová", "červená", "černá"],
     obrazky: [],
   },
   {
@@ -715,7 +711,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["bílá", "zelená", "červená", "zlatá"],
     obrazky: [],
   },
   {
@@ -729,12 +725,12 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["žlutá", "béžová"],
     obrazky: [],
   },
   {
     id: "vaza-strukturovana",
-    nazev: "Váza strukturovaná",
+    nazev: "Váza",
     kategorie: ["Dekorace", "Podzim"],
     velikosti: [
       { nazev: "Malá", cena: 90 },
@@ -742,7 +738,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
+    barvy: ["béžová", "zelená", "vínová"],
     obrazky: [],
   },
   {
@@ -971,7 +967,6 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
-    rucneMalovano: true,
     popis: `
       3D tištěný flexibilní krokodýl
 
