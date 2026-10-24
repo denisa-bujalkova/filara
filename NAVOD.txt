@@ -19,6 +19,22 @@ Kusy skladem:
   Když řádek skladem u výrobku chybí, počet se nehlídá.
   Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
 
+Velikosti s vlastní cenou (např. S, M, L):
+  Místo řádku cena napište u výrobku seznam velikostí:
+    velikosti: [
+      { nazev: "S", cena: 290 },
+      { nazev: "M", cena: 390 },
+    ],
+  Zákazník si velikost vybere tlačítkem, v nabídce se ukáže „od 290 Kč“.
+  Velikost je vidět i v košíku a v e-mailu s objednávkou.
+
+Popis výrobku:
+  Delší popis pište mezi zpětné uvozovky ` (na české klávesnici pravý Alt + 7), pak může mít víc řádků.
+  Prázdný řádek = nový odstavec.
+  Řádek začínající „- “ = odrážka; text před dvojtečkou bude tučně (- Materiál: PLA z kukuřičného škrobu).
+  Samostatný řádek končící dvojtečkou = mezititulek (Péče a údržba:).
+  První odstavec se zobrazí výrazněji (např. „3D tištěná flexibilní ještěrka“).
+
 Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
   2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
@@ -41,7 +57,7 @@ Instagram: v data\produkty.js v části OBCHOD napište jméno účtu, např. in
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
 Jak funguje objednávka:
-  Zákazník si vybere barvu a počet kusů, přidá výrobek do košíku a v košíku vyplní jméno,
+  Zákazník si vybere velikost, barvu a počet kusů, přidá výrobek do košíku a v košíku vyplní jméno,
   e-mail, telefon a dopravu (případně poznámku k objednávce). Po kliknutí na
   „Odeslat objednávku e-mailem“ se mu otevře e-mailový program s hotovou objednávkou,
   kterou vám odešle. Pak mu odpovězte s potvrzením a platebními údaji.

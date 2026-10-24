@@ -1162,10 +1162,39 @@ textarea.input {
   font-size: 26px;
 }
 
+/* Popis výrobku pod nákupem: odstavce, mezititulky a odrážky (formát viz produkty.js). */
 .detail-desc {
-  margin: 20px 0 0;
-  white-space: pre-line;
+  margin-top: 28px;
   color: var(--muted);
+}
+
+.detail-desc p {
+  margin: 0 0 14px;
+}
+
+.detail-desc > p:first-child {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.detail-desc h3 {
+  margin: 22px 0 10px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.detail-desc ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+
+.detail-desc li {
+  margin-bottom: 8px;
+}
+
+.detail-desc strong {
+  color: var(--text);
 }
 
 .specs {
@@ -1248,6 +1277,46 @@ textarea.input {
   background: #f87171;
   box-shadow: 0 0 0 1px var(--surface-2);
   transform: translateY(-50%) rotate(-45deg);
+}
+
+/* Výběr velikosti – tlačítka s názvem a cenou */
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.size {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 72px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.size small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.size:hover {
+  border-color: var(--cyan);
+}
+
+.size[aria-pressed="true"] {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan), 0 0 14px rgba(31, 179, 214, 0.35);
 }
 
 .buy-row {

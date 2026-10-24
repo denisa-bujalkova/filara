@@ -44,9 +44,49 @@
     return barvy.every((b) => skladem(p, b) === 0);
   }
 
-  /** Cena, nebo červené „Vyprodáno“ u vyprodaného výrobku. */
+  /** Velikosti výrobku z produkty.js, např. velikosti: [{ nazev: "S", cena: 290 }, { nazev: "M", cena: 390 }]. */
+  function velikostiProduktu(p) {
+    return (Array.isArray(p.velikosti) ? p.velikosti : []).filter((v) => v && v.nazev);
+  }
+
+  /** Cena ve zvolené velikosti; výrobek bez velikostí má jednu cenu (cena: 150). */
+  function cenaProduktu(p, velikost) {
+    const vel = velikostiProduktu(p);
+    if (!vel.length) return Number(p.cena) || 0;
+    return Number((vel.find((v) => v.nazev === velikost) || vel[0]).cena) || 0;
+  }
+
+  /** Nejnižší cena – podle ní se řadí a u výrobku s víc velikostmi se ukazuje „od …“. */
+  function nejnizsiCena(p) {
+    const vel = velikostiProduktu(p);
+    return vel.length ? Math.min(...vel.map((v) => Number(v.cena) || 0)) : Number(p.cena) || 0;
+  }
+
+  /** Cena (u víc velikostí „od …“), nebo červené „Vyprodáno“ u vyprodaného výrobku. */
   function cenaNeboVyprodano(p) {
-    return vyprodano(p) ? `<span class="sold-out">Vyprodáno</span>` : kc.format(p.cena);
+    if (vyprodano(p)) return `<span class="sold-out">Vyprodáno</span>`;
+    const ruzneCeny = new Set(velikostiProduktu(p).map((v) => Number(v.cena) || 0)).size > 1;
+    return (ruzneCeny ? "od " : "") + kc.format(nejnizsiCena(p));
+  }
+
+  /** Popis z produkty.js: prázdný řádek = nový odstavec, řádky začínající „- “ = odrážky (text před dvojtečkou
+      je tučně), samostatný řádek končící dvojtečkou = mezititulek. */
+  function popisHtml(text) {
+    const sNazvem = (r) => {
+      const m = r.match(/^([^:]{1,40}):\s(.+)$/);
+      return m ? `<strong>${esc(m[1])}:</strong> ${esc(m[2])}` : esc(r);
+    };
+    return String(text || "")
+      .trim()
+      .split(/\n\s*\n/)
+      .map((blok) => {
+        const radky = blok.split("\n").map((r) => r.trim()).filter(Boolean);
+        if (radky.every((r) => r.startsWith("- "))) return `<ul>${radky.map((r) => `<li>${sNazvem(r.slice(2))}</li>`).join("")}</ul>`;
+        if (radky.length === 1 && radky[0].endsWith(":")) return `<h3>${esc(radky[0])}</h3>`;
+        if (radky.length === 1) return `<p>${sNazvem(radky[0])}</p>`;
+        return `<p>${radky.map(esc).join("<br />")}</p>`;
+      })
+      .join("");
   }
 
   /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“). */
@@ -78,10 +118,15 @@
 
   const KLIC_KOSIKU = "filara-kosik-v1";
 
+  function platnaVelikost(p, velikost) {
+    const vel = velikostiProduktu(p);
+    return vel.length ? vel.some((v) => v.nazev === velikost) : !velikost;
+  }
+
   function nactiKosik() {
     try {
       const data = JSON.parse(localStorage.getItem(KLIC_KOSIKU) || "[]");
-      return Array.isArray(data) ? data.filter((i) => i && najdiProdukt(i.id)) : [];
+      return Array.isArray(data) ? data.filter((i) => i && najdiProdukt(i.id) && platnaVelikost(najdiProdukt(i.id), i.velikost)) : [];
     } catch {
       return [];
     }
@@ -112,7 +157,7 @@
   }
 
   function klicPolozky(i) {
-    return `${i.id}|${i.barva || ""}|${(i.poznamka || "").trim()}`;
+    return `${i.id}|${i.velikost || ""}|${i.barva || ""}|${(i.poznamka || "").trim()}`;
   }
 
   function pridejDoKosiku(polozka) {
@@ -132,7 +177,7 @@
   }
 
   function mezisoucet() {
-    return kosik.reduce((s, i) => s + najdiProdukt(i.id).cena * i.pocet, 0);
+    return kosik.reduce((s, i) => s + cenaProduktu(najdiProdukt(i.id), i.velikost) * i.pocet, 0);
   }
 
   function aktualizujPocet() {
@@ -373,8 +418,8 @@
   function vypisNabidky() {
     let seznam = PRODUKTY.filter((p) => !stavNabidky.kategorie || kategorieProduktu(p).includes(stavNabidky.kategorie));
     const razeni = {
-      "cena-vzestupne": (a, b) => a.cena - b.cena,
-      "cena-sestupne": (a, b) => b.cena - a.cena,
+      "cena-vzestupne": (a, b) => nejnizsiCena(a) - nejnizsiCena(b),
+      "cena-sestupne": (a, b) => nejnizsiCena(b) - nejnizsiCena(a),
       nazev: (a, b) => a.nazev.localeCompare(b.nazev, "cs"),
       // Nejnovější = výrobky přidané na konec seznamu v produkty.js.
       nejnovejsi: (a, b) => PRODUKTY.indexOf(b) - PRODUKTY.indexOf(a),
@@ -422,6 +467,13 @@
            })
            .join("")}</div>`
       : "";
+    const velikosti = velikostiProduktu(p);
+    const vyberVelikosti = velikosti.length > 1
+      ? `<p class="swatches-label">Velikost</p>
+         <div class="sizes" role="group" aria-label="Velikost">${velikosti
+           .map((v, n) => `<button type="button" class="size" data-velikost="${esc(v.nazev)}" aria-pressed="${n === 0}"><span>${esc(v.nazev)}</span><small>${kc.format(Number(v.cena) || 0)}</small></button>`)
+           .join("")}</div>`
+      : "";
     // V drobečkové navigaci kategorie, ze které zákazník přišel (má-li výrobek víc kategorií).
     const kategorie = kategorieProduktu(p);
     const kat = kategorie.includes(stavNabidky.kategorie) ? stavNabidky.kategorie : kategorie[0];
@@ -436,14 +488,14 @@
           <div>
             ${p.rucneMalovano ? stitekMalovano() : ""}
             <h1 class="chrome-text">${esc(p.nazev)}</h1>
-            <p class="price">${cenaNeboVyprodano(p)}</p>
-            <p class="detail-desc">${esc(p.popis)}</p>
+            <p class="price" id="cena">${velikosti.length && !vyprodano(p) ? kc.format(cenaProduktu(p)) : cenaNeboVyprodano(p)}</p>
             <dl class="specs">
               <div class="card"><dt>Materiál</dt><dd>${esc(p.material)}</dd></div>
               ${p.rozmery ? `<div class="card"><dt>Rozměry</dt><dd>${esc(p.rozmery)}</dd></div>` : ""}
               ${p.dobaVyroby ? `<div class="card"><dt>Doba výroby</dt><dd>${esc(p.dobaVyroby)}</dd></div>` : ""}
             </dl>
             <div class="card buy">
+              ${vyberVelikosti}
               ${vyberBarvy}
               <div class="buy-row">
                 <div class="qty">
@@ -455,6 +507,7 @@
               </div>
               <p class="hint" id="sklad-info" aria-live="polite" hidden></p>
             </div>
+            ${p.popis ? `<div class="detail-desc">${popisHtml(p.popis)}</div>` : ""}
           </div>
         </div>
       </div>`;
@@ -473,6 +526,7 @@
     );
 
     let barva = app.querySelector('[data-barva][aria-pressed="true"]')?.dataset.barva || null;
+    let velikost = velikostiProduktu(p)[0]?.nazev;
     let pocet = 1;
     const vystupPoctu = document.getElementById("pocet");
     const tlacitko = document.getElementById("pridat");
@@ -498,6 +552,13 @@
         obnovPocet();
       }),
     );
+    app.querySelectorAll("[data-velikost]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        velikost = btn.dataset.velikost;
+        app.querySelectorAll("[data-velikost]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+        if (!vyprodano(p)) document.getElementById("cena").textContent = kc.format(cenaProduktu(p, velikost));
+      }),
+    );
     app.querySelectorAll("[data-zmena]").forEach((btn) =>
       btn.addEventListener("click", () => {
         pocet += Number(btn.dataset.zmena);
@@ -506,8 +567,9 @@
     );
     tlacitko.addEventListener("click", () => {
       if (!lzePridat(p, barva)) return obnovPocet();
-      pridejDoKosiku({ id: p.id, barva, pocet, poznamka: "" });
-      toast(`Přidáno do košíku: ${esc(p.nazev)}${barva ? ` (${esc(barva)})` : ""} × ${pocet} <a href="#kosik">Zobrazit košík →</a>`);
+      pridejDoKosiku({ id: p.id, velikost, barva, pocet, poznamka: "" });
+      const upresneni = [velikost, barva].filter(Boolean).join(", ");
+      toast(`Přidáno do košíku: ${esc(p.nazev)}${upresneni ? ` (${esc(upresneni)})` : ""} × ${pocet} <a href="#kosik">Zobrazit košík →</a>`);
       pocet = 1;
       obnovPocet();
     });
@@ -570,7 +632,8 @@
         return `<li class="card cart-item">
           <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(p.obrazky && p.obrazky[0], p.nazev, PRODUKTY.indexOf(p))}</a>
           <div class="cart-item-body">
-            <div class="cart-item-top"><a href="#produkt/${encodeURIComponent(p.id)}">${esc(p.nazev)}</a><span>${kc.format(p.cena * pol.pocet)}</span></div>
+            <div class="cart-item-top"><a href="#produkt/${encodeURIComponent(p.id)}">${esc(p.nazev)}</a><span>${kc.format(cenaProduktu(p, pol.velikost) * pol.pocet)}</span></div>
+            ${pol.velikost ? `<div class="cart-item-meta">Velikost: ${esc(pol.velikost)}</div>` : ""}
             ${pol.barva ? `<div class="cart-item-meta"><i style="background:${esc(b ? b.hex : "#888")}"></i>${esc(pol.barva)}</div>` : ""}
             ${pol.poznamka ? `<div class="cart-item-note">„${esc(pol.poznamka)}“</div>` : ""}
             <div class="cart-item-actions">
@@ -616,7 +679,8 @@
     const d = DOPRAVA[udaje.doprava];
     const radky = kosik.map((pol, n) => {
       const p = najdiProdukt(pol.id);
-      let r = `${n + 1}) ${p.nazev}${pol.barva ? ` – barva: ${pol.barva}` : ""} – ${pol.pocet} ks × ${kc.format(p.cena)} = ${kc.format(p.cena * pol.pocet)}`;
+      const cena = cenaProduktu(p, pol.velikost);
+      let r = `${n + 1}) ${p.nazev}${pol.velikost ? ` – velikost: ${pol.velikost}` : ""}${pol.barva ? ` – barva: ${pol.barva}` : ""} – ${pol.pocet} ks × ${kc.format(cena)} = ${kc.format(cena * pol.pocet)}`;
       if (pol.poznamka) r += `\n   Poznámka: ${pol.poznamka}`;
       return r;
     });
