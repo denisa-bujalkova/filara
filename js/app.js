@@ -292,8 +292,9 @@
       <section class="hero">
         <div class="container hero-inner">
           <div>
-            <h1><span class="chrome-text">Originální výrobky</span><br /><span class="accent-text">vrstvu po vrstvě</span></h1>
-            <p>Zvířátka, dekorace, květiny i pomocníky do domácnosti tiskneme z PLA, ručně dočišťujeme a některé i malujeme akvarelem. Vyberte si, co vám udělá radost.</p>          </div>
+            <h1><span class="chrome-text">Originální 3D výrobky</span><br /><span class="accent-text">vrstvu po vrstvě</span></h1>
+            <p>Zvířátka, dekorace, květiny i pomocníky do domácnosti tiskneme na 3D tiskárně z PLA, ručně dočišťujeme a některé i malujeme akvarelem. Koupíte je u nás online s osobním odběrem v Úněticích nebo na trzích. Vyberte si, co vám udělá radost.</p>
+          </div>
           <div class="hero-art">${uvodniFotky()}</div>
         </div>
       </section>
@@ -462,7 +463,7 @@
   function napojDetail(id) {
     const p = najdiProdukt(id);
     if (!p) return;
-    document.title = `${p.nazev} | ${OBCHOD.nazev}`;
+    document.title = `${p.nazev} – 3D tisk | ${OBCHOD.nazev}`;
 
     app.querySelectorAll("[data-foto]").forEach((btn) =>
       btn.addEventListener("click", () => {
@@ -731,7 +732,7 @@ Děkuji`;
     return `
       <div class="container page prose">
         <h1 class="chrome-text">O nás</h1>
-        <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je FILARA – naše srdcová záležitost.</p>
+        <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je FILARA – naše srdcová záležitost a malá dílna na 3D tisk v Úněticích u Prahy, kde vrstvu po vrstvě vznikají zvířátka, dekorace, květiny i originální dárky.</p>
         <p>Modely si sami nenavrhujeme. Podporujeme autory koupí jejich licencí. To pravé kouzlo jim ale vdechujeme až u nás doma. Vybíráme pro vás ty nejzajímavější modely, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
         <h2>Jak pracujeme</h2>
         <ul>
@@ -782,7 +783,7 @@ Děkuji`;
       hash = "nenalezeno";
     }
     const [stranka, param] = hash.split("/");
-    document.title = `${OBCHOD.nazev} – výrobky z 3D tiskárny`;
+    document.title = `${OBCHOD.nazev} – 3D tisk Únětice | dekorace, zvířátka a dárky z 3D tiskárny`;
     if (orizniKosik()) {
       ulozKosik();
       toast("Některé kusy už nemáme skladem, proto jsme je z košíku ubrali.");
