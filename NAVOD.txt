@@ -54,6 +54,14 @@ Trhy na úvodní stránce (pruh „Potkejte nás na trzích“ pod úvodem):
 Instagram: v data\produkty.js v části OBCHOD napište jméno účtu, např. instagram: "_filara_print",
   Odkaz s bílou ikonkou se ukáže na stránce Kontakt a ve spodní liště. Prázdné "" = bez odkazu.
 
+Obchodní podmínky, Reklamace a vrácení, Ochrana osobních údajů:
+  Odkazy jsou ve spodní liště a v košíku. Texty jsou v data\podminky.js (otevřete v Poznámkovém bloku).
+  Jméno provozovatele a IČO napište v data\produkty.js v části OBCHOD (provozovatel, ico) –
+  do textů se doplní samy.
+  Všechno, co je napsané jako [DOPLNIT: …], se na webu ukazuje žlutě. Přepište to správným
+  údajem včetně hranatých závorek, nebo celou větu smažte, pokud se vás netýká.
+  Texty jsou návrh – před spuštěním e-shopu je nechte zkontrolovat odborníkem.
+
 Logo je v obrazky\logo.jpg – novou verzi loga stačí uložit pod stejným názvem.
 
 Jak funguje objednávka:
@@ -62,6 +70,9 @@ Jak funguje objednávka:
   „Odeslat objednávku e-mailem“ se mu otevře e-mailový program s hotovou objednávkou,
   kterou vám odešle. Pak mu odpovězte s potvrzením a platebními údaji.
   Košík si pamatuje prohlížeč zákazníka, nikam jinam se neukládá.
+  Když zákazník zaškrtne „Zapamatovat si moje údaje“, prohlížeč si zapamatuje jeho jméno, e-mail,
+  telefon a adresu a příště je předvyplní. Údaje zůstanou jen v jeho prohlížeči, vy je nikde neuvidíte.
+  Zákazník je může kdykoli smazat odkazem „Zapomenout údaje“ v košíku.
 
 Když se po úpravě web zobrazí prázdný, je v produkty.js nejspíš chyba v zápisu
 (chybějící čárka nebo uvozovka). Zkontrolujte místo, které jste naposledy měnili.

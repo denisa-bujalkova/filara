@@ -33,6 +33,10 @@ const OBCHOD = {
   adresa: "Rýznerova 177/10, 252 62 Únětice",   // sídlo i výdejní místo (Salon Clair)
   // Instagram: jméno účtu bez @, např. instagram: "filara.cz". Prázdné "" = odkaz se nezobrazí.
   instagram: "_filara_print",
+  // Údaje o provozovateli – ukazují se ve spodní liště a v obchodních podmínkách (texty jsou v podminky.js).
+  // Dokud je tu [DOPLNIT …], zobrazí se na webu žlutě.
+  provozovatel: "[DOPLNIT: jméno a příjmení podnikatele]",
+  ico: "[DOPLNIT: IČO]",
 };
 
 // Způsoby dopravy nabízené v košíku. adresa: "vydejni-misto" | "dorucovaci" | "zadna"
@@ -108,22 +112,12 @@ const TRHY = [
 
 const PRODUKTY = [
   {
-    id: "axolotl",
-    nazev: "Axolotl",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: ["Růžová", "Modrá"],
-    skladem: { "Růžová": 2, "Modrá": 0 },
-    obrazky: [],
-  },
-  {
     id: "vlk",
     nazev: "Vlk",
     kategorie: "Zvířata",
     cena: 120,
     material: "PLA",
+    rucneMalovano: true,
     popis: `
       3D tištěný flexibilní vlk
 
@@ -179,37 +173,6 @@ const PRODUKTY = [
     barvy: [],
     skladem: 3,
     obrazky: ["obrazky/snek-1.jpg"],
-  },
-  {
-    id: "jesterka",
-    nazev: "Ještěrka",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: `
-      3D tištěná flexibilní ještěrka
-
-      Hledáte originální dekoraci, stylový doplněk na pracovní stůl nebo skvělý dárek, který prostě neomrzí? Tato 3D tištěná ještěrka si vás získá na první dotek!
-
-      Díky pohyblivým kloubům je úžasně ohebná a živá. Skvěle funguje jako antistresová hračka do ruky, veselá ozdoba do pokoje i nevšední společník na monitor či poličku.
-
-      - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o ještěrku pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte ještěrku za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do života trochu barevné hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
-    `,
-    barvy: [],
-    obrazky: ["obrazky/jesterka-1.jpg", "obrazky/jesterka-2.jpg"],
   },
   {
     id: "had",
@@ -317,56 +280,6 @@ const PRODUKTY = [
     obrazky: [],
   },
   {
-    id: "kvetinac",
-    nazev: "Květináč",
-    kategorie: "Květiny",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "mak",
-    nazev: "Mák",
-    kategorie: "Květiny",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "tulipan",
-    nazev: "Tulipán",
-    kategorie: "Květiny",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "ruze",
-    nazev: "Růže",
-    kategorie: "Květiny",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "kaktus",
-    nazev: "Kaktus",
-    kategorie: "Květiny",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
     id: "miska-na-pistacie",
     nazev: "Miska na pistácie",
     kategorie: "Domácnost",
@@ -418,50 +331,10 @@ const PRODUKTY = [
     obrazky: [],
   },
   {
-    id: "sova",
-    nazev: "Sova",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
     id: "zralok",
     nazev: "Žralok",
     kategorie: "Zvířata",
     cena: 250,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "chobotnice",
-    nazev: "Chobotnice",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "lenochod",
-    nazev: "Lenochod",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "vejce",
-    nazev: "Vejce",
-    kategorie: "Hračky",
-    cena: 0,
     material: "PLA",
     popis: "",
     barvy: [],
@@ -475,16 +348,6 @@ const PRODUKTY = [
       { nazev: "Malý", cena: 40 },
       { nazev: "Velký", cena: 80 },
     ],
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "kostlivec",
-    nazev: "Kostlivec",
-    kategorie: "Hračky",
-    cena: 0,
     material: "PLA",
     popis: "",
     barvy: [],
@@ -511,16 +374,6 @@ const PRODUKTY = [
       { nazev: "S", cena: 40 },
       { nazev: "L", cena: 90 },
     ],
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "srdce",
-    nazev: "Srdce",
-    kategorie: "Klíčenky",
-    cena: 0,
     material: "PLA",
     popis: "",
     barvy: [],
@@ -579,6 +432,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 150,
     material: "PLA",
+    rucneMalovano: true,
     popis: `
       3D tištěná flexibilní žába
 
@@ -610,6 +464,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 190,
     material: "PLA",
+    rucneMalovano: true,
     popis: `
       3D tištěný flexibilní kůň
 
@@ -797,68 +652,6 @@ const PRODUKTY = [
     obrazky: [],
   },
   {
-    id: "krakatice",
-    nazev: "Krakatice",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: `
-      3D tištěná flexibilní krakatice
-
-      Ponořte se do mořských hlubin s touto fascinující 3D tištěnou krakaticí! Zaujme na první pohled svými dlouhými rameny a výraznýma zvědavýma očima.
-
-      Díky velkému množství ohebných kloubů v ramenou je úžasně tvárná a v rukou působí neuvěřitelně živě. Skvěle poslouží jako nepřehlédnutelná dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky mořského světa.
-
-      - Ohebná ramena: Množství samostatných kloubů umožňuje plynulý a přirozený pohyb ramen.
-      - Detailní zpracování: Precizní 3D tisk s důrazem na výrazné oči a strukturu chapadel.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Skvělá antistresová pomůcka do ruky pro dospělé i zábavný společník pro starší děti.
-
-      Péče a údržba (jak o krakatici pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krakatici za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svůj prostor tímto mořským tvorem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
-    `,
-    barvy: [],
-    obrazky: [],
-  },
-  {
-    id: "krokodyl",
-    nazev: "Krokodýl",
-    kategorie: "Zvířata",
-    cena: 0,
-    material: "PLA",
-    popis: `
-      3D tištěný flexibilní krokodýl
-
-      Přidejte do své sbírky trochu divoké přírody! Tento ohebný krokodýl zaujme na první pohled svým přátelským výrazem, ručně malovanýma očima a propracovanými detaily, jako jsou malé zuby či šedé drápky.
-
-      Díky pohyblivým kloubům v nohách i článkovaném těle je úžasně ohebný a skvěle padne do ruky. Poslouží jako veselá dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky zvířat.
-
-      - Ruční práce: Oči a drobné detaily jsou pečlivě ručně malované, takže každý krokodýl je jedinečný originál.
-      - Detailní zpracování: Precizní 3D tisk s důrazem na strukturovaný hřbet, plynulý pohyb kloubů a výrazné drápy.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o krokodýla pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krokodýla za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svůj stůl tímto originálním krokodýlem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
-    `,
-    barvy: [],
-    obrazky: [],
-  },
-  {
     id: "stromek-s-hvezdou",
     nazev: "Realistický stromek s hvězdou",
     kategorie: "Vánoce",
@@ -973,16 +766,6 @@ const PRODUKTY = [
     obrazky: [],
   },
   {
-    id: "omalovanka-carodejnice",
-    nazev: "3D omalovánka – čarodějnice",
-    kategorie: "Halloween",
-    cena: 0,
-    material: "PLA",
-    popis: "",
-    barvy: [],
-    obrazky: [],
-  },
-  {
     id: "svicen-kvet",
     nazev: "Svícen květ",
     kategorie: "Domácnost",
@@ -993,3 +776,235 @@ const PRODUKTY = [
     obrazky: [],
   },
 ];
+
+/*
+  VÝROBKY ZATÍM BEZ CENY – na webu se nezobrazují.
+  Až budete znát cenu: zkopírujte celý výrobek (od { po },) na konec seznamu PRODUKTY výše,
+  doplňte cenu a uložte.
+
+  {
+    id: "axolotl",
+    nazev: "Axolotl",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: ["Růžová", "Modrá"],
+    skladem: { "Růžová": 2, "Modrá": 0 },
+    obrazky: [],
+  },
+  {
+    id: "jesterka",
+    nazev: "Ještěrka",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: `
+      3D tištěná flexibilní ještěrka
+
+      Hledáte originální dekoraci, stylový doplněk na pracovní stůl nebo skvělý dárek, který prostě neomrzí? Tato 3D tištěná ještěrka si vás získá na první dotek!
+
+      Díky pohyblivým kloubům je úžasně ohebná a živá. Skvěle funguje jako antistresová hračka do ruky, veselá ozdoba do pokoje i nevšední společník na monitor či poličku.
+
+      - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
+      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
+      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
+      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
+
+      Péče a údržba (jak o ještěrku pečovat):
+
+      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte ještěrku za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
+      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
+      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
+
+      Přidejte si do života trochu barevné hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
+
+      Autor modelu / design: KOGI3D
+    `,
+    barvy: [],
+    obrazky: ["obrazky/jesterka-1.jpg", "obrazky/jesterka-2.jpg"],
+  },
+  {
+    id: "kvetinac",
+    nazev: "Květináč",
+    kategorie: "Květiny",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "mak",
+    nazev: "Mák",
+    kategorie: "Květiny",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "tulipan",
+    nazev: "Tulipán",
+    kategorie: "Květiny",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "ruze",
+    nazev: "Růže",
+    kategorie: "Květiny",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "kaktus",
+    nazev: "Kaktus",
+    kategorie: "Květiny",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "sova",
+    nazev: "Sova",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "chobotnice",
+    nazev: "Chobotnice",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "lenochod",
+    nazev: "Lenochod",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "vejce",
+    nazev: "Vejce",
+    kategorie: "Hračky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "kostlivec",
+    nazev: "Kostlivec",
+    kategorie: "Hračky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "srdce",
+    nazev: "Srdce",
+    kategorie: "Klíčenky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "krakatice",
+    nazev: "Krakatice",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    popis: `
+      3D tištěná flexibilní krakatice
+
+      Ponořte se do mořských hlubin s touto fascinující 3D tištěnou krakaticí! Zaujme na první pohled svými dlouhými rameny a výraznýma zvědavýma očima.
+
+      Díky velkému množství ohebných kloubů v ramenou je úžasně tvárná a v rukou působí neuvěřitelně živě. Skvěle poslouží jako nepřehlédnutelná dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky mořského světa.
+
+      - Ohebná ramena: Množství samostatných kloubů umožňuje plynulý a přirozený pohyb ramen.
+      - Detailní zpracování: Precizní 3D tisk s důrazem na výrazné oči a strukturu chapadel.
+      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
+      - Pro radost i klid: Skvělá antistresová pomůcka do ruky pro dospělé i zábavný společník pro starší děti.
+
+      Péče a údržba (jak o krakatici pečovat):
+
+      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krakatici za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
+      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
+      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
+
+      Oživte svůj prostor tímto mořským tvorem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
+
+      Autor modelu / design: KOGI3D
+    `,
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "krokodyl",
+    nazev: "Krokodýl",
+    kategorie: "Zvířata",
+    cena: 0,
+    material: "PLA",
+    rucneMalovano: true,
+    popis: `
+      3D tištěný flexibilní krokodýl
+
+      Přidejte do své sbírky trochu divoké přírody! Tento ohebný krokodýl zaujme na první pohled svým přátelským výrazem, ručně malovanýma očima a propracovanými detaily, jako jsou malé zuby či šedé drápky.
+
+      Díky pohyblivým kloubům v nohách i článkovaném těle je úžasně ohebný a skvěle padne do ruky. Poslouží jako veselá dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky zvířat.
+
+      - Ruční práce: Oči a drobné detaily jsou pečlivě ručně malované, takže každý krokodýl je jedinečný originál.
+      - Detailní zpracování: Precizní 3D tisk s důrazem na strukturovaný hřbet, plynulý pohyb kloubů a výrazné drápy.
+      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
+      - Pro radost i klid: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
+
+      Péče a údržba (jak o krokodýla pečovat):
+
+      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krokodýla za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
+      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
+      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
+
+      Oživte svůj stůl tímto originálním krokodýlem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
+
+      Autor modelu / design: KOGI3D
+    `,
+    barvy: [],
+    obrazky: [],
+  },
+  {
+    id: "omalovanka-carodejnice",
+    nazev: "3D omalovánka – čarodějnice",
+    kategorie: "Halloween",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: [],
+  },
+*/

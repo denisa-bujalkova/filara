@@ -104,9 +104,9 @@
     const h = hues[seed % hues.length];
     const id = `g${seed}`;
     let lines = "";
-    for (let i = 0; i < 10; i++) lines += `<line x1="0" x2="200" y1="${52 + i * 12}" y2="${52 + i * 12}" stroke="hsl(${h} 40% 22%)" />`;
+    for (let i = 0; i < 10; i++) lines += `<line x1="0" x2="200" y1="${52 + i * 12}" y2="${52 + i * 12}" stroke="hsl(${h} 35% 86%)" />`;
     return `<svg viewBox="0 0 200 200" role="img" aria-label="${esc(alt)}" preserveAspectRatio="xMidYMid slice">
-      <defs><radialGradient id="${id}" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="hsl(${h} 60% 18%)" /><stop offset="1" stop-color="#0d1115" /></radialGradient></defs>
+      <defs><radialGradient id="${id}" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="hsl(${h} 60% 90%)" /><stop offset="1" stop-color="#f3f6f8" /></radialGradient></defs>
       <rect width="200" height="200" fill="url(#${id})" />${lines}
       <ellipse cx="100" cy="166" rx="56" ry="9" fill="hsl(${h} 90% 50%)" opacity=".25" />
       <path d="M100 40 150 68v64l-50 28-50-28V68z" fill="hsl(${h} 70% 42%)" />
@@ -581,6 +581,29 @@
   // Rozepsané údaje zákazníka – zůstanou vyplněné i po změně počtu kusů.
   const udaje = { jmeno: "", email: "", telefon: "", doprava: 0, misto: "", ulice: "", mesto: "", psc: "", poznamka: "" };
 
+  // Na přání zákazníka si prohlížeč zapamatuje kontaktní údaje pro příští objednávku (jen v tomto prohlížeči, nikam se neposílají).
+  const KLIC_UDAJU = "filara-udaje-v1";
+  const PAMATOVANE_UDAJE = ["jmeno", "email", "telefon", "misto", "ulice", "mesto", "psc"];
+  let zapamatovat = false;
+  try {
+    const ulozene = JSON.parse(localStorage.getItem(KLIC_UDAJU) || "null");
+    if (ulozene && typeof ulozene === "object") {
+      PAMATOVANE_UDAJE.forEach((k) => typeof ulozene[k] === "string" && (udaje[k] = ulozene[k]));
+      zapamatovat = true;
+    }
+  } catch {
+    /* úložiště nedostupné – údaje se jen nepředvyplní */
+  }
+
+  function ulozUdaje() {
+    try {
+      if (zapamatovat) localStorage.setItem(KLIC_UDAJU, JSON.stringify(Object.fromEntries(PAMATOVANE_UDAJE.map((k) => [k, udaje[k].trim()]))));
+      else localStorage.removeItem(KLIC_UDAJU);
+    } catch {
+      /* úložiště nedostupné */
+    }
+  }
+
   function kosikStranka() {
     if (kosik.length === 0)
       return `
@@ -603,15 +626,18 @@
             <h2>Objednávka</h2>
             <div class="error-box" id="chyby" role="alert" hidden></div>
             <p class="hint" style="margin:0 0 12px">Údaje označené <span class="povinne">*</span> jsou povinné.</p>
+            ${zapamatovat ? `<p class="hint ulozene-udaje">Vyplnili jsme vaše uložené údaje. <button type="button" class="link-button" id="zapomenout">Zapomenout údaje</button></p>` : ""}
             <label class="field"><span>Jméno a příjmení <span class="povinne">*</span></span><input class="input" name="jmeno" autocomplete="name" value="${esc(udaje.jmeno)}" /></label>
             <label class="field"><span>E-mail <span class="povinne">*</span></span><input class="input" name="email" type="email" autocomplete="email" placeholder="vas@email.cz" value="${esc(udaje.email)}" /></label>
             <label class="field"><span>Telefon <span class="povinne">*</span></span><input class="input" name="telefon" type="tel" autocomplete="tel" placeholder="+420 123 456 789" value="${esc(udaje.telefon)}" /></label>
             <fieldset class="radio-list" style="margin-top:16px"><legend>Doprava <span class="povinne">*</span></legend>${dopravy}</fieldset>
             <div id="adresa"></div>
             <label class="field"><span>Poznámka k objednávce</span><textarea class="input" name="poznamka" maxlength="1000">${esc(udaje.poznamka)}</textarea></label>
+            <label class="checkbox"><input type="checkbox" name="zapamatovat" ${zapamatovat ? "checked" : ""} />Zapamatovat si moje údaje pro příští objednávku (uloží se jen v tomto prohlížeči)</label>
             <div class="totals" id="soucty"></div>
             <button type="submit" class="btn btn-primary btn-block">Odeslat objednávku e-mailem</button>
             <p class="hint">Otevře se váš e-mailový program s připravenou objednávkou – stačí ji odeslat. Potvrzení a platební údaje vám pošleme zpět.</p>
+            ${infoStranky.length ? `<p class="hint">Odesláním objednávky souhlasíte s <a class="link" href="#obchodni-podminky">obchodními podmínkami</a>. Jak nakládáme s vašimi údaji, najdete v <a class="link" href="#ochrana-osobnich-udaju">ochraně osobních údajů</a>.</p>` : ""}
             <div class="after-send" id="po-odeslani" hidden>
               Neotevřel se e-mail? Zkopírujte objednávku a pošlete ji na <a class="link" href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a>.
               <div class="actions">
@@ -753,6 +779,7 @@ Děkuji`;
       if (e.target.name in udaje && e.target.name !== "doprava") udaje[e.target.name] = e.target.value;
     });
     form.addEventListener("change", (e) => {
+      if (e.target.name === "zapamatovat") zapamatovat = e.target.checked;
       if (e.target.name !== "doprava") return;
       udaje.doprava = Number(e.target.value);
       vykresliAdresu();
@@ -762,11 +789,20 @@ Děkuji`;
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!zkontrolujUdaje(form)) return;
+      ulozUdaje();
       const predmet = `Objednávka z webu ${OBCHOD.nazev} – ${udaje.jmeno.trim()}`;
       const odkaz = document.createElement("a");
       odkaz.href = `mailto:${OBCHOD.email}?subject=${encodeURIComponent(predmet)}&body=${encodeURIComponent(textObjednavky())}`;
       odkaz.click();
       document.getElementById("po-odeslani").hidden = false;
+    });
+
+    document.getElementById("zapomenout")?.addEventListener("click", () => {
+      zapamatovat = false;
+      ulozUdaje();
+      PAMATOVANE_UDAJE.forEach((k) => (udaje[k] = ""));
+      zobraz();
+      toast("Uložené údaje jsme z tohoto prohlížeče smazali.");
     });
 
     document.getElementById("kopirovat").addEventListener("click", async (e) => {
@@ -801,7 +837,7 @@ Děkuji`;
           <div class="o-nas-text">
             <p>Jsme malá česká značka, která vznikla z nadšení pro 3D tisk a touhy přenášet do bězných dnů trochu radosti, hravosti a stylové elegance.</p>
             <p>Každý kousek, který u nás najdete od roztomilých flexibilních zvířátek přes svítící dekorace až po minimalistické doplňky, prochází našima rukama. Záleží nám na tom, aby naše výrobky nebyly jen obyčejnými plastovými předměty. Proto si dáváme záležet s výběrem materiálů, dolaďujeme detaily a u mnoha modelů osobně ručně malujeme oči i drobné prvky, aby měl každou kousek svou vlastní duši a charakter.</p>
-            <p>Záleží nám i na přírodě, proto tiskneme výhradně z ekologického PLA plastu, který se vyrábí z obnovitelných zdrojů, jako je kukuřičný škrob. Je lehký, pevný a šetrný k životnímu prostředí.</p>
+            <p>Záleží nám i na přírodě, proto tiskneme výhradně z PLA plastu, který se vyrábí z obnovitelných zdrojů, jako je kukuřičný škrob. Je lehký a pevný.</p>
             <p>Filara je náš srdeční projekt a největší odměnou pro nás je, když náš výrobek vykouzlí úsměv na tváři vám nebo někomu, komu ho darujete.</p>
             <p>Děkujeme, že jste součástí našeho příběhu! ✨</p>
           </div>
@@ -840,6 +876,28 @@ Děkuji`;
       </div>`;
   }
 
+  /* ---------- Obchodní podmínky, reklamace, ochrana údajů (texty v data/podminky.js) ---------- */
+
+  const infoStranky = typeof INFO_STRANKY !== "undefined" ? INFO_STRANKY : [];
+
+  /** Text z podminky.js: {ico} apod. nahradí údaji z OBCHOD, [DOPLNIT: …] zvýrazní žlutě. */
+  function infoText(text) {
+    // Značky pro [DOPLNIT …] – znaky, které se v textu jinak nevyskytují (přežijí esc i odrážky s dvojtečkou).
+    // Dvojtečka uvnitř [DOPLNIT: …] se dočasně schová, jinak by ji popisHtml vzal za „tučný text: popis“.
+    const doplnit = (t) => String(t).replace(/\[(DOPLNIT[^\]]*)\]/g, (_, obsah) => "" + obsah.replace(/:/g, "") + "");
+    const s = doplnit(text).replace(/\{(\w+)\}/g, (cela, klic) => (klic in OBCHOD ? doplnit(OBCHOD[klic]) : cela));
+    return popisHtml(s).replace(//g, '<mark class="doplnit">').replace(//g, "</mark>").replace(//g, ":");
+  }
+
+  function infoStranka(adresa) {
+    const s = infoStranky.find((x) => x.adresa === adresa);
+    return `
+      <div class="container page prose">
+        <h1 class="chrome-text">${esc(s.nadpis)}</h1>
+        <div class="card detail-desc info-text">${infoText(s.text)}</div>
+      </div>`;
+  }
+
   function nenalezeno() {
     return `<div class="container page" style="text-align:center"><h1 class="chrome-text">Stránka nenalezena</h1><p class="empty" style="margin:16px 0 32px">Tahle stránka se asi ještě tiskne… nebo neexistuje.</p><a href="#nabidka" class="btn btn-primary">Zpět na nabídku</a></div>`;
   }
@@ -873,6 +931,7 @@ Děkuji`;
       napojKosik();
     } else if (stranka === "o-nas") app.innerHTML = oNas();
     else if (stranka === "kontakt") app.innerHTML = kontakt();
+    else if (infoStranky.some((s) => s.adresa === stranka)) app.innerHTML = infoStranka(stranka);
     else app.innerHTML = nenalezeno();
 
     const aktivni = stranka === "produkt" || stranka === "produkty" ? "nabidka" : stranka;
@@ -893,6 +952,10 @@ Děkuji`;
     el.hidden = !OBCHOD.instagram;
     if (OBCHOD.instagram) el.innerHTML = odkazInstagram();
   });
+  document.getElementById("info-odkazy").innerHTML = infoStranky.map((s) => `<a href="#${esc(s.adresa)}">${esc(s.nadpis)}</a>`).join("");
+  // Ve spodní liště: provozovatel a IČO (popisHtml by obalil text do <p>, proto jen zvýraznění [DOPLNIT …]).
+  const sDoplnit = (t) => esc(t).replace(/\[(DOPLNIT[^\]]*)\]/g, '<mark class="doplnit">$1</mark>');
+  if (OBCHOD.provozovatel) document.getElementById("provozovatel").innerHTML = ` · ${sDoplnit(OBCHOD.provozovatel)}${OBCHOD.ico ? `, IČO ${sDoplnit(OBCHOD.ico)}` : ""}`;
   document.getElementById("year").textContent = new Date().getFullYear();
 
   // Klik na logo/název vždy vrátí na úvod – i když už na úvodu jsme (odroluje nahoru).

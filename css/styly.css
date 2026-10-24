@@ -1,18 +1,18 @@
-﻿/* Vzhled FILARA: tmavý grafit, chromové stříbro a modrozelený přechod podle čočky v logu. */
+﻿/* Vzhled FILARA: světlý podklad, grafitové chromové písmo a modrozelený přechod podle čočky v logu. */
 :root {
-  --bg: #0b0d10;
-  --surface: #14181d;
-  --surface-2: #1b2128;
-  --line: #2a313a;
-  --line-strong: #3a434e;
-  --text: #e9edf0;
-  --muted: #a3adb6;
-  --subtle: #7a858f;
-  --teal: #1fd1b4;
-  --cyan: #1fb3d6;
-  --blue: #2f7cf0;
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-2: #f7f9fa;
+  --line: #dde3e8;
+  --line-strong: #c4cdd5;
+  --text: #161b20;
+  --muted: #4b5661;
+  --subtle: #6b7682;
+  --teal: #0b8a76;
+  --cyan: #0a7d9c;
+  --blue: #2563eb;
   --accent-gradient: linear-gradient(120deg, #22e0b0 0%, #1fb3d6 50%, #2f6fed 100%);
-  --chrome-gradient: linear-gradient(180deg, #ffffff 0%, #d9dfe4 40%, #8e98a2 62%, #e6eaed 100%);
+  --chrome-gradient: linear-gradient(180deg, #56626d 0%, #1d2329 45%, #66727d 62%, #2b333b 100%);
   --radius: 16px;
 }
 
@@ -21,7 +21,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   /* Pojistka pro telefony: nic nesmí stránku posunout do strany. */
   overflow-x: hidden;
 }
@@ -112,7 +112,7 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(11, 13, 16, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -148,7 +148,7 @@ textarea {
   border-radius: 50%;
   object-fit: cover;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 18px rgba(31, 179, 214, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 0 18px rgba(31, 179, 214, 0.3);
 }
 
 .brand-name {
@@ -159,15 +159,6 @@ textarea {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.brand-small .brand-logo {
-  width: 32px;
-  height: 32px;
-}
-
-.brand-small .brand-name {
-  font-size: 14px;
 }
 
 .nav {
@@ -285,12 +276,12 @@ textarea {
 .footer {
   margin-top: 64px;
   border-top: 1px solid var(--line);
-  background: #090b0d;
+  background: #eceff2;
   font-size: 12px;
   color: var(--muted);
 }
 
-/* Úzká patička: název s textem a kontakty vedle sebe v jednom řádku */
+/* Úzká patička: kontakty vlevo, odkazy na podmínky vpravo */
 .footer-inner {
   display: flex;
   flex-wrap: wrap;
@@ -312,11 +303,6 @@ textarea {
   margin: 0;
 }
 
-.footer-title {
-  font-weight: 600;
-  color: var(--text);
-}
-
 .footer a[data-shop-email] {
   color: var(--cyan);
 }
@@ -332,7 +318,7 @@ textarea {
   flex: none;
   width: 26px;
   height: 26px;
-  color: #fff;
+  color: var(--text);
   transition: opacity 0.15s;
 }
 
@@ -388,7 +374,7 @@ textarea {
 }
 
 .btn-secondary:hover {
-  border-color: #6b7681;
+  border-color: #8a96a1;
 }
 
 .btn-block {
@@ -454,7 +440,7 @@ textarea {
   border: 1px solid var(--line-strong);
   border-radius: 10px;
   padding: 10px 12px;
-  background: #0f1317;
+  background: var(--surface);
   font-size: 15px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -466,7 +452,7 @@ textarea {
 }
 
 .input[aria-invalid="true"] {
-  border-color: #f87171;
+  border-color: #dc2626;
 }
 
 textarea.input {
@@ -485,7 +471,7 @@ textarea.input {
   align-items: center;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: #0f1317;
+  background: var(--surface);
 }
 
 .qty button {
@@ -534,8 +520,8 @@ textarea.input {
   border: 1px solid var(--line-strong);
   border-radius: 14px;
   padding: 12px 16px;
-  background: #1b2128;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
   font-size: 14px;
   animation: toast-in 0.25s ease;
 }
@@ -888,7 +874,7 @@ textarea.input {
   min-width: 26px;
   border-radius: 999px;
   padding: 1px 8px;
-  background: #0f1317;
+  background: var(--surface);
   font-size: 12px;
   text-align: center;
   color: var(--subtle);
@@ -993,7 +979,7 @@ textarea.input {
 .thumb {
   aspect-ratio: 1;
   overflow: hidden;
-  background: #101418;
+  background: #eef2f4;
 }
 
 .thumb img,
@@ -1015,7 +1001,7 @@ textarea.input {
   border: 1px solid rgba(31, 209, 180, 0.55);
   border-radius: 999px;
   padding: 2px 10px 2px 8px;
-  background: rgba(11, 13, 16, 0.78);
+  background: rgba(255, 255, 255, 0.9);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.6;
@@ -1063,7 +1049,7 @@ textarea.input {
 }
 
 .sold-out {
-  color: #f87171;
+  color: #dc2626;
 }
 
 .dots {
@@ -1274,7 +1260,7 @@ textarea.input {
   right: -5px;
   height: 3px;
   border-radius: 2px;
-  background: #f87171;
+  background: #dc2626;
   box-shadow: 0 0 0 1px var(--surface-2);
   transform: translateY(-50%) rotate(-45deg);
 }
@@ -1441,7 +1427,7 @@ textarea.input {
 }
 
 .remove:hover {
-  color: #f87171;
+  color: #dc2626;
 }
 
 .summary {
@@ -1458,6 +1444,43 @@ textarea.input {
 .summary h2 {
   margin-bottom: 16px;
   font-size: 20px;
+}
+
+/* Zapamatování údajů zákazníka v košíku */
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.checkbox input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--cyan);
+}
+
+.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cyan);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.ulozene-udaje {
+  margin: -4px 0 12px;
 }
 
 .radio-list {
@@ -1526,12 +1549,12 @@ textarea.input {
 
 .error-box {
   margin-bottom: 14px;
-  border: 1px solid rgba(248, 113, 113, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.4);
   border-radius: 10px;
   padding: 10px 12px;
-  background: rgba(248, 113, 113, 0.08);
+  background: rgba(220, 38, 38, 0.08);
   font-size: 14px;
-  color: #fca5a5;
+  color: #b91c1c;
 }
 
 .after-send {
@@ -1656,3 +1679,45 @@ textarea.input {
   border: 0;
 }
 
+
+/* ---------- Obchodní podmínky, reklamace, ochrana údajů ---------- */
+
+.info-text {
+  max-width: 820px;
+  margin-top: 0;
+  padding: 24px;
+  line-height: 1.6;
+}
+
+.info-text > p:first-child {
+  font-size: 16px;
+}
+
+.info-text h3 {
+  margin-top: 28px;
+  font-size: 17px;
+}
+
+/* Údaj, který majitelé ještě musí doplnit v produkty.js nebo podminky.js */
+mark.doplnit {
+  border-radius: 4px;
+  padding: 0 4px;
+  background: #facc15;
+  color: #1c1917;
+  font-weight: 600;
+}
+
+.footer-links a {
+  color: var(--muted);
+}
+
+.footer-links a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+@media (max-width: 639px) {
+  .info-text {
+    padding: 16px;
+  }
+}
