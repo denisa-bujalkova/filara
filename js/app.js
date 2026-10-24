@@ -732,15 +732,16 @@ Děkuji`;
     return `
       <div class="container page prose">
         <h1 class="chrome-text">O nás</h1>
-        <p>Jsme Klára a Filip Klaudy. Dlouho jsme přemýšleli, jak spojit naši vášeň pro moderní technologie a ruční práci. Výsledkem je FILARA – naše srdcová záležitost a malá dílna na 3D tisk v Úněticích u Prahy, kde vrstvu po vrstvě vznikají zvířátka, dekorace, květiny i originální dárky.</p>
-        <p>Modely si sami nenavrhujeme. Podporujeme autory koupí jejich licencí. To pravé kouzlo jim ale vdechujeme až u nás doma. Vybíráme pro vás ty nejzajímavější modely, které s maximální pečlivostí tiskneme, ručně malujeme, sestavujeme a ladíme do posledního detailu.</p>
-        <h2>Jak pracujeme</h2>
-        <ul>
-          <li>Tiskneme z PLA filamentu, materiálu vyrobeného z obnovitelných zdrojů, jako je kukuřičný škrob.</li>
-          <li>Každý kus ručně dočistíme a zkontrolujeme.</li>
-          <li>Některé modely dokreslujeme ručně akvarelem, a tak každý dostane svůj vlastní charakter.</li>
-          <li>Výrobky, které máme skladem, lze osobně vyzvednout v Salonu Clair (Rýznerova 177/10, 252 62 Únětice).</li>
-        </ul>
+        <div class="o-nas">
+          <div class="o-nas-foto"><img src="obrazky/o-nas.jpg" alt="Klára a Filip z dílny FILARA s rodinou" /></div>
+          <div class="o-nas-text">
+            <p>Jsme malá česká značka, která vznikla z nadšení pro 3D tisk a touhy přenášet do bězných dnů trochu radosti, hravosti a stylové elegance.</p>
+            <p>Každý kousek, který u nás najdete od roztomilých flexibilních zvířátek přes svítící dekorace až po minimalistické doplňky, prochází našima rukama. Záleží nám na tom, aby naše výrobky nebyly jen obyčejnými plastovými předměty. Proto si dáváme záležet s výběrem materiálů, dolaďujeme detaily a u mnoha modelů osobně ručně malujeme oči i drobné prvky, aby měl každou kousek svou vlastní duši a charakter.</p>
+            <p>Záleží nám i na přírodě, proto tiskneme výhradně z ekologického PLA plastu, který se vyrábí z obnovitelných zdrojů, jako je kukuřičný škrob. Je lehký, pevný a šetrný k životnímu prostředí.</p>
+            <p>Filara je náš srdeční projekt a největší odměnou pro nás je, když náš výrobek vykouzlí úsměv na tváři vám nebo někomu, komu ho darujete.</p>
+            <p>Děkujeme, že jste součástí našeho příběhu! ✨</p>
+          </div>
+        </div>
       </div>`;
   }
 
@@ -755,15 +756,22 @@ Děkuji`;
   }
 
   function kontakt() {
+    const adresaMapy = encodeURIComponent("Salon Clair, " + OBCHOD.adresa);
+    // Na mobilu se po klepnutí na číslo rovnou volá.
+    const telefonOdkaz = "tel:" + String(OBCHOD.telefon).replace(/[^\d+]/g, "");
     return `
       <div class="container page prose">
         <h1 class="chrome-text">Kontakt</h1>
-        <div class="card contact-grid">
-          <div><small>E-mail</small><strong><a href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a></strong></div>
-          <div><small>Telefon</small><strong>${esc(OBCHOD.telefon)}</strong></div>
-          <div><small>Provozovatel</small><strong>${esc(OBCHOD.nazev)}</strong><br />${esc(OBCHOD.provozovatel)}<br />${esc(OBCHOD.adresa)}</div>
-          <div><small>Osobní odběr</small>Salon Clair<br />${esc(OBCHOD.adresa)}</div>
-          ${OBCHOD.instagram ? `<div><small>Instagram</small><strong>${odkazInstagram()}</strong></div>` : ""}
+        <div class="card kontakt">
+          <div class="kontakt-udaje">
+            <div><strong>Filara 3D print</strong><br />${esc(OBCHOD.adresa)}</div>
+            <div><strong>Telefon</strong><br /><a href="${telefonOdkaz}">${esc(String(OBCHOD.telefon).replace(/^\+420\s*/, ""))}</a></div>
+            <div><strong>E-mail</strong><br /><a href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a></div>
+            ${OBCHOD.instagram ? `<div><strong>Instagram</strong><br />${odkazInstagram()}</div>` : ""}
+          </div>
+          <div class="mapa">
+            <iframe src="https://maps.google.com/maps?q=${adresaMapy}&output=embed" title="Mapa – Salon Clair, ${esc(OBCHOD.adresa)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
         </div>
       </div>`;
   }

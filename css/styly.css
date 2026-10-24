@@ -1,4 +1,4 @@
-/* Vzhled FILARA: tmavý grafit, chromové stříbro a modrozelený přechod podle čočky v logu. */
+﻿/* Vzhled FILARA: tmavý grafit, chromové stříbro a modrozelený přechod podle čočky v logu. */
 :root {
   --bg: #0b0d10;
   --surface: #14181d;
@@ -1502,29 +1502,88 @@ textarea.input {
   color: var(--muted);
 }
 
-.contact-grid {
+/* O nás: text vlevo, fotka vpravo. Fotka je vysoká přesně jako text (ořízne se). Na mobilu je fotka nad textem. */
+.o-nas {
   display: grid;
   gap: 24px;
-  margin-top: 24px;
-  padding: 24px;
 }
 
-@media (min-width: 640px) {
-  .contact-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+.o-nas-foto {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.o-nas-foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 65%;
+}
+
+@media (min-width: 768px) {
+  .o-nas {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: stretch;
+  }
+
+  .o-nas-foto {
+    order: 2;
+    aspect-ratio: auto;
+  }
+
+  .o-nas-text p:last-child {
+    margin-bottom: 0;
   }
 }
 
-.contact-grid small {
-  display: block;
-  font-size: 13px;
-  color: var(--subtle);
+/* Kontakt: v jedné kartě údaje vlevo a mapa vpravo, obojí svisle na střed. Na mobilu je mapa pod údaji. */
+.kontakt {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
 }
 
-.contact-grid strong {
+@media (min-width: 768px) {
+  .kontakt {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center;
+    gap: 40px;
+    padding: 32px 32px 32px 40px;
+  }
+}
+
+.kontakt-udaje {
+  display: grid;
+  gap: 24px;
+  align-content: start;
   font-size: 17px;
+  color: var(--muted);
 }
 
-.contact-grid a {
+.kontakt-udaje strong {
+  color: var(--text);
+}
+
+.kontakt-udaje a {
   color: var(--cyan);
 }
+
+/* Mapa výdejního místa na stránce Kontakt (Google Maps, adresa se bere z OBCHOD.adresa). */
+.mapa {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.mapa iframe {
+  display: block;
+  width: 100%;
+  height: 300px;
+  border: 0;
+}
+

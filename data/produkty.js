@@ -22,10 +22,9 @@
 const OBCHOD = {
   nazev: "FILARA",
   // Na tento e-mail chodí objednávky z košíku – nezapomeňte ho přepsat na svůj.
-  email: "klaudy@filara.cz",
-  telefon: "+420 000 000 000",
+  email: "filara3dprint@gmail.com",
+  telefon: "+420 777 782 749",
   adresa: "Rýznerova 177/10, 252 62 Únětice",   // sídlo i výdejní místo (Salon Clair)
-  provozovatel: "Klára a Filip Klaudy, IČO: 00000000",
   // Instagram: jméno účtu bez @, např. instagram: "filara.cz". Prázdné "" = odkaz se nezobrazí.
   instagram: "_filara_print",
 };
