@@ -781,7 +781,7 @@ textarea.input {
 /* ---------- Nabídka ---------- */
 
 .page {
-  padding-top: 40px;
+  padding-top: 20px;
 }
 
 .page h1 {
@@ -1080,7 +1080,7 @@ textarea.input {
 /* ---------- Detail výrobku ---------- */
 
 .breadcrumb {
-  margin-bottom: 24px;
+  margin-bottom: 14px;
   font-size: 14px;
   color: var(--subtle);
 }
@@ -1094,22 +1094,9 @@ textarea.input {
   gap: 40px;
 }
 
-/* Fotky výrobku: na mobilu nejvýš 300 px na střed, na počítači užší sloupec vedle textu. */
-.detail > div:first-child {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
 @media (min-width: 768px) {
   .detail {
-    grid-template-columns: 2fr 3fr;
-    align-items: start;
-  }
-
-  .detail > div:first-child {
-    max-width: 380px;
-    margin: 0;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1165,7 +1152,7 @@ textarea.input {
 .detail-desc {
   margin-top: 20px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .detail-desc p {
@@ -1173,14 +1160,14 @@ textarea.input {
 }
 
 .detail-desc > p:first-child {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
 }
 
 .detail-desc h3 {
   margin: 22px 0 10px;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text);
 }
 
