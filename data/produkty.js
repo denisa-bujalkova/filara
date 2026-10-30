@@ -6,7 +6,8 @@
   - Text pište vždy do uvozovek "..." a za každou položkou nechte čárku.
   - Fotky dejte do složky "obrazky" a u produktu je uveďte, např. obrazky: ["obrazky/vaza-1.jpg", "obrazky/vaza-2.jpg"].
     Bez fotky se zobrazí barevný zástupný obrázek.
-  - Barvy u produktu musí mít stejný název jako v seznamu BARVY níže.
+  - Barvy u produktu musí mít stejný název jako v seznamu BARVY níže (na velkých a malých písmenech nezáleží).
+    Barva, která v seznamu BARVY chybí, se na webu nezobrazí.
   - doporuceny: true = produkt se ukáže na úvodní stránce.
   - Nové výrobky přidávejte na konec seznamu PRODUKTY – řazení „Od nejnovějšího“ se řídí jejich pořadím.
   - Kategorie výrobku musí být napsaná stejně jako v seznamu KATEGORIE.
@@ -17,6 +18,10 @@
   - Delší popis pište mezi zpětné uvozovky ` ... ` (pravý Alt + 7), pak může mít víc řádků:
     prázdný řádek = nový odstavec, řádek začínající "- " = odrážka (text před dvojtečkou bude tučně),
     samostatný řádek končící dvojtečkou = mezititulek. Uvnitř popisu nepoužívejte znak `.
+  - Pod popisem každého výrobku se sám ukáže blok „Materiál a péče“ (texty jsou v MATERIAL_A_PECE níže).
+    pece: "ohebne" = k bloku se přidají řádky pro daný typ výrobku (ohebne | led | vaza | miska | podtacky | zavesne).
+    Víc typů najednou: pece: ["led", "zavesne"],  Řádek pece můžete vynechat = jen společný blok.
+  - autor: "KOGI3D" = pod blokem se ukáže „Autor modelu: KOGI3D“ (řádek můžete vynechat).
   - rucneMalovano: true = u produktu se zobrazí štítek „Ručně malováno“ (řádek můžete vynechat = bez štítku).
   - skladem: 3 = kolik hotových kusů máte. Na webu se číslo nezobrazí, jen nedovolí dát do košíku víc kusů.
     skladem: 0 = výrobek nejde objednat (u výrobku se ukáže „Momentálně vyprodáno“).
@@ -47,6 +52,9 @@ const DOPRAVA = [
   { nazev: "Osobní odběr (po domluvě)", cena: 0, adresa: "zadna" },
 ];
 
+// Barvy, ze kterých si zákazník vybírá. Každá má název a odstín jako kód #RRGGBB (podle něj se kreslí kolečko).
+// Novou barvu přidáte řádkem na konec seznamu, např.:  { nazev: "Stříbrná", hex: "#C0C0C0" },
+// Kód odstínu najdete třeba na webu htmlcolorcodes.com. Stejný název pak napište k výrobku do barvy: [...].
 const BARVY = [
   { nazev: "Bílá", hex: "#F5F5F4" },
   { nazev: "Černá", hex: "#1C1917" },
@@ -58,13 +66,14 @@ const BARVY = [
   { nazev: "Modrá", hex: "#2563EB" },
   { nazev: "Fialová", hex: "#7C3AED" },
   { nazev: "Růžová", hex: "#EC4899" },
-  { nazev: "Béžová", hex: "#F5F5DC" },
+  { nazev: "Béžová", hex: "#E8D9B5" },
   { nazev: "Vínová", hex: "#722F37" },
   { nazev: "Tmavě hnědá", hex: "#5A2D00" },
   { nazev: "Světle hnědá", hex: "#CAA580" },
+  { nazev: "Zlatá", hex: "#D4AF37" },
 ];
 
-const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Hračky", "Klíčenky"];
+const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Klíčenky"];
 
 // Fotky, které se střídají v kruhu na úvodní stránce (nejlépe čtvercové, výrobek uprostřed).
 // Když seznam necháte prázdný [], ukáže se místo nich obrázek tiskárny.
@@ -99,10 +108,12 @@ const TRHY = [
   {
     id: "liska-na-polici",              // krátký jedinečný název bez mezer a diakritiky
     nazev: "Liška na polici",
-    kategorie: "Zvířata",               // Zvířata | Dekorace | Květiny | Domácnost | Vánoce | Podzim | Halloween | Hračky | Klíčenky
-                                        // víc kategorií: ["Zvířata", "Hračky"]
+    kategorie: "Zvířata",               // Zvířata | Dekorace | Květiny | Domácnost | Vánoce | Podzim | Halloween | Klíčenky
+                                        // víc kategorií: ["Dekorace", "Podzim"]
     cena: 350,                          // nebo velikosti (viz návod nahoře), pak řádek cena vynechte
     material: "PLA",
+    pece: "ohebne",                     // doplňkové řádky v bloku „Materiál a péče“: ohebne | led | vaza | miska | podtacky | zavesne
+    autor: "KOGI3D",                    // autor modelu (nepovinné)
     rozmery: "12 × 6 × 8 cm",
     dobaVyroby: "cca 3 pracovní dny",   // nebo "skladem"
     doporuceny: true,                   // true = ukáže se na úvodní stránce
@@ -114,6 +125,41 @@ const TRHY = [
   },
 */
 
+// MATERIÁL A PÉČE – ukáže se pod popisem každého výrobku, stačí ho upravit jen tady.
+// Každý řádek začíná "- ", text před dvojtečkou bude tučně (stejně jako odrážky v popisu).
+const MATERIAL_A_PECE = `
+  - Materiál: PLA, lehký a pevný plast vyrobený z kukuřičného škrobu.
+  - Ruční dokončení: Každý kus ručně dočistíme a zkontrolujeme. Odstín barvy a drobné detaily se mohou u jednotlivých kusů nepatrně lišit, každý je tak originál.
+  - Chraňte před teplem: PLA měkne už při 50–60 °C. Nenechávejte výrobek za sklem na přímém slunci, v rozpáleném autě ani u topení, krbu či otevřeného ohně.
+  - Pouze do interiéru: Dlouhodobé UV záření a vlhkost mohou materiál oslabit a barvy vybledit.
+  - Čištění: Otřete suchým nebo lehce navlhčeným hadříkem. Nemyjte v myčce na nádobí, horká voda by výrobek zdeformovala.
+`;
+
+// Doplňkové řádky podle typu výrobku – přidají se na konec bloku „Materiál a péče“.
+// U výrobku je zapnete řádkem pece: "ohebne" (nebo víc typů: pece: ["led", "zavesne"]).
+// Nový typ přidáte jako další řádek se jménem bez mezer a diakritiky, např.:  magnet: `- ...`,
+const PECE = {
+  ohebne: `
+    - Pohyblivé klouby: Ohýbejte s citem, při násilném přetočení se klouby mohou rozpojit.
+    - Drobné části: Dekorativní předmět, není hračka. Uchovávejte mimo dosah malých dětí.
+  `,
+  led: `
+    - Pouze LED svíčky: Určeno výhradně pro LED čajové svíčky na baterie. Nikdy nepoužívejte svíčku s otevřeným ohněm.
+  `,
+  vaza: `
+    - Pouze pro suché dekorace: Váza není vodotěsná, není určena pro vodu a živé květiny.
+  `,
+  miska: `
+    - Na potraviny ve skořápce: Určeno pro pistácie a oříšky ve skořápce, ne pro volné potraviny. Myjte ručně ve vlažné vodě.
+  `,
+  podtacky: `
+    - Pod hrnky a sklenice: Nevhodné pod horké hrnce, pánve ani konvice s vařící vodou.
+  `,
+  zavesne: `
+    - Lehké a odolné: Nezatěžují větve a při pádu se nerozbijí jako sklo.
+  `,
+};
+
 const PRODUKTY = [
   {
     id: "vlk",
@@ -121,25 +167,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 120,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní vlk
-
       Tento ohebný vlk zaujme na první pohled výraznýma, ručně malovanýma očima, které mu dávají jedinečný výraz.
 
       Díky pohyblivým kloubům a článkovanému tělu i ocasu je krásně tvárný. Poslouží jako originální dekorace na stůl, zábavná antistresová hračka do ruky i milý dárek.
 
       - Ruční práce: Oči jsou detailně ručně malované, takže každý kus je neopakovatelný originál.
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro každého: Zabaví děti a dospělým pomůže odreagovat se u pracovního stolu.
-
-      Péče a údržba:
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte vlka na přímém letním slunci za sklem, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení dešti a UV záření může materiálu i barvě uškodit.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé části.
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -150,27 +186,14 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 150,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní šnek
-
       Vneste do svého domova trochu přírodní pohody a roztomilosti! Tento 3D tištěný šnek s krásně tvarovanou ulitou a zvědavě vztyčenými tykadly si vás zaručeně získá.
 
       Díky článkovanému tělu je šnek příjemně ohebný a skvěle padne do ruky. Poslouží jako originální dekorace do pokoje či kanceláře, uklidňující antistresová hračka i skvělý dárek pro milovníky přírody.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb článků těla a elegantní tvar ulity.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Barevné provedení a detaily se mohou u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o šneka pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte šneka za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do života trochu pohodové hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     skladem: 3,
@@ -179,34 +202,21 @@ const PRODUKTY = [
   {
     id: "had",
     nazev: "Had hladký",
-    kategorie: ["Zvířata", "Hračky"],
+    kategorie: "Zvířata",
     velikosti: [
       { nazev: "S", cena: 150 },
       { nazev: "M", cena: 290 },
       { nazev: "L", cena: 390 },
     ],
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní hladký had
-
       Přidejte do svého prostoru špetku exotické elegance! Tento trnitý had s výrazně plastickými šupinami po celé délce těla a zářivě modrýma očima je dokonalou ukázkou toho, co dokáže moderní 3D tisk.
 
       Díky velkému množství pohyblivých kloubů je neuvěřitelně ohebný, kroutí se úplně jako živý a skvěle padne do ruky. Poslouží jako nepřehlédnutelná dekorace na stůl či poličku, chytlavá antistresová hračka i skvělý dárek pro milovníky plazů a netradičních doplňků.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na výrazné ostny, uhrančivé oči a plynulý, přirozený pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Barevné provedení očí a přechody odstínů se mohou u jednotlivých kusů nepatrně lišit, každý kousek je tak neopakovatelný originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o hada pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte hada za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do sbírky trochu tajemné hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -217,8 +227,9 @@ const PRODUKTY = [
     kategorie: ["Zvířata", "Podzim"],
     cena: 150,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
-    barvy: ["oranžová", "vínová"],
+    barvy: ["Béžová", "Vínová"],
     obrazky: [],
   },
   {
@@ -230,6 +241,7 @@ const PRODUKTY = [
       { nazev: "Velký", cena: 120 },
     ],
     material: "PLA",
+    pece: "led",
     popis: "",
     barvy: ["Světle hnědá", "Tmavě hnědá"],
     obrazky: ["obrazky/hrib-1.jpg"],
@@ -240,6 +252,7 @@ const PRODUKTY = [
     kategorie: ["Dekorace", "Podzim"],
     cena: 150,
     material: "PLA",
+    pece: "led",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -264,6 +277,7 @@ const PRODUKTY = [
     kategorie: ["Dekorace", "Podzim"],
     cena: 80,
     material: "PLA",
+    pece: "led",
     popis: "",
     barvy: ["Béžová", "Oranžová", "Zelená"],
     obrazky: [],
@@ -277,6 +291,7 @@ const PRODUKTY = [
       { nazev: "Velká", cena: 350 },
     ],
     material: "PLA",
+    pece: "vaza",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -287,6 +302,7 @@ const PRODUKTY = [
     kategorie: "Domácnost",
     cena: 250,
     material: "PLA",
+    pece: "miska",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -297,6 +313,7 @@ const PRODUKTY = [
     kategorie: "Domácnost",
     cena: 250,
     material: "PLA",
+    pece: "podtacky",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -307,27 +324,14 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 250,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní chameleon
-
       Oživte svůj stůl nebo poličku tímto úžasným 3D tištěným chameleonem! Tento exotický ještěr vyniká nápaditým provedením s článkovaným tělem a typicky zvědavýma očima.
 
       Díky pohyblivým kloubům je chameleon krásně ohebný a skvěle padne do ruky. Poslouží jako stylová dekorace, chytlavá antistresová hračka i skvělý dárek pro milovníky zvířat a netradičních doplňků.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o chameleona pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte chameleona za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do života trochu tropické hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -338,6 +342,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 250,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -345,7 +350,7 @@ const PRODUKTY = [
   {
     id: "duch",
     nazev: "Duch",
-    kategorie: ["Halloween", "Hračky"],
+    kategorie: "Halloween",
     velikosti: [
       { nazev: "Malý", cena: 40 },
       { nazev: "Velký", cena: 80 },
@@ -364,6 +369,7 @@ const PRODUKTY = [
       { nazev: "Velký", cena: 490 },
     ],
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: ["obrazky/drak-1.jpg"],
@@ -377,6 +383,7 @@ const PRODUKTY = [
       { nazev: "Velká", cena: 90 },
     ],
     material: "PLA",
+    pece: "zavesne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -390,6 +397,7 @@ const PRODUKTY = [
       { nazev: "M", cena: 390 },
     ],
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -403,27 +411,14 @@ const PRODUKTY = [
       { nazev: "M", cena: 490 },
     ],
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní T-Rex
-
       Připravte se na pořádnou dávku pravěké zábavy! Tento 3D tištěný T-Rex je ikonický dinosaurus v moderním, ultra flexibilním provedení, který si okamžitě získá pozornost na jakémkoliv stole či poličce.
 
       Díky propracovaným pohyblivým kloubům je úžasně ohebný. Skvěle poslouží jako originální dekorace, chytlavá antistresová hračka do ruky i perfektní dárek pro všechny milovníky dinosaurů.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o T-rexe pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte T-rexe za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do sbírky trochu pravěké hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -434,27 +429,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 150,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěná flexibilní žába
-
       Tato veselá ohebná žabka si vás získá svým usměvavým výrazem a nápaditě propracovanýma nohama.
 
       Díky pohyblivým kloubům v nohách a těle je úžasně tvárná a ohebná. Skvěle funguje jako hravá dekorace na pracovní stůl, zábavná antistresová hračka do ruky i milý dárek pro každého, kdo má rád originální doplňky.
 
       - Ruční práce: Oči jsou pečlivě ručně malované, což každé žabce dává jedinečný pohled a charakter.
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů a výrazné žabí prsty s bílými akcenty.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Pomůže odbourat stres při práci nebo škole a dospělým i dětem přinese kousek hravé přírody do pokoje.
-
-      Péče a údržba (jak o žabku pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte žabku za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svou poličku nebo stůl touto originální žabkou — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -465,27 +448,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 190,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní kůň
-
       Tento ohebný koník si vás získá svým milým pohledem a jedinečnými, ručně malovanými detaily.
 
       Díky promyšleným kloubům v nohou a těle je krásně pohyblivý, takže ho můžete snadno napolohovat. Stane se z něj hravá dekorace na pracovní stůl, zábavná antistresová hračka i originální dárek pro všechny milovníky koní.
 
       - Ruční práce: Oči a další detaily jsou pečlivě ručně malované, což z každého koníka dělá jedinečný kousek.
       - Detailní zpracování: Precizní 3D tisk s důrazem na bohatou hřívu, ocas a rousy na kopytech.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Skvělá antistresová hračka do ruky pro dospělé i parťák na hraní pro starší děti.
-
-      Péče a údržba (jak o koníka pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte ho za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svou poličku nebo stůl tímto originálním koníkem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -499,27 +470,14 @@ const PRODUKTY = [
       { nazev: "Velký", cena: 490 },
     ],
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní trnitý had
-
       Přidejte do svého prostoru špetku exotičnosti a fascinující elegance! Tento trnitý had s výraznými ostny po celé délce těla je dokonalou ukázkou toho, co dokáže moderní 3D tisk.
 
       Díky velkému množství pohyblivých kloubů je neuvěřitelně ohebný, kroutí se úplně jako živý a skvěle padne do ruky. Poslouží jako nepřehlédnutelná dekorace na stůl či poličku, chytlavá antistresová hračka i skvělý dárek pro milovníky netradičních doplňků.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na detailní ostny a plynulý, přirozený pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o hada pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte hada za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do sbírky trochu tajemné hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -530,27 +488,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 590,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěná flexibilní větev se stromovým hadem
-
       Proměňte svůj stůl či poličku v malý kousek exotické přírody! Tato propracovaná sada obsahuje flexibilního trnitého hada a stylový stojánek v podobě větve stromu, na který můžete hada libovolně obmotat nebo zavěsit.
 
       Díky velkému množství pohyblivých kloubů je had neuvěřitelně ohebný a skvěle padne do ruky. Spolu se stojánkem tvoří nepřehlédnutelnou dekoraci, ale zároveň funguje jako chytlavá antistresová hračka a originální dárek pro všechny milovníky plazů.
 
       - Set 2 v 1: Obsahuje dlouhého flexibilního trnitého hada a padnoucí stojánek ve tvaru větve.
       - Detailní zpracování: Precizní 3D tisk s důrazem na plastické šupiny/ostny, plynulý pohyb kloubů a věrohodnou strukturu dřeva.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i relax: Působivá dekorace do interiéru i skvělá antistresová pomůcka do ruky.
-
-      Péče a údržba (jak o set pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte model za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Dopřejte svému prostoru dominantní exotický prvek — vyberte si svou barevnou kombinaci ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -561,27 +507,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 490,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěná flexibilní větev s hladkým stromovým hadem
-
       Proměňte svůj stůl či poličku v malý kousek exotické přírody! Tato propracovaná sada obsahuje flexibilního, příjemně hladkého hada a stylový stojánek v podobě větve stromu, na který můžete hada libovolně obmotat nebo zavěsit.
 
       Had s jemnými liniemi, hladkým tělem a zvědavě vztyčenou hlavou představuje elegantní a čistou variantu oblíbeného ohebného ještěra. Díky velkému množství pohyblivých kloubů je neuvěřitelně tvárný a skvěle padne do ruky.
 
       - Set 2 v 1: Obsahuje dlouhého flexibilního hladkého hada a padnoucí stojánek ve tvaru větve.
       - Elegantní vzhled: Precizní 3D tisk s důrazem na hladký povrch těla, plynulý přirozený pohyb a věrohodnou strukturu dřevěného podstavce.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i relax: Působivá dekorace do interiéru i skvělá antistresová pomůcka do ruky.
-
-      Péče a údržba (jak o set pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte model za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Dopřejte svému prostoru dominantní exotický prvek — vyberte si svou barevnou kombinaci ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -592,27 +526,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 490,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný chameleon na stojánku s větví
-
       Přeneste si domů kousek tropického pralesa! Tato promyšlená sada obsahuje flexibilního chameleona a propracovaný stojánek s větví, trávou a kameny, na který můžete chameleona libovolně usadit nebo uchytit.
 
       Díky pohyblivým kloubům těla, nohou i ocasu je chameleon úžasně ohebný a skvěle padne do ruky. Spolu se stojánkem tvoří nepřehlédnutelnou dominantní dekoraci na stůl či poličku, ale zároveň funguje jako chytlavá antistresová hračka.
 
       - Set 2 v 1: Obsahuje ohebného chameleona a detailně propracovaný stojánek v podobě větve s travnatým podstavcem a kameny.
       - Detailní zpracování: Precizní 3D tisk s důrazem na strukturu kůže, zvědavé oči a plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i relax: Působivý dekorativní doplněk do interiéru i skvělá antistresová pomůcka do ruky.
-
-      Péče a údržba (jak o set pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte model za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svůj prostor tímto exotickým modelem — vyberte si svou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -623,6 +545,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 490,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -637,6 +560,7 @@ const PRODUKTY = [
       { nazev: "+ drak", cena: 790 },
     ],
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -647,6 +571,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 390,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -699,6 +624,7 @@ const PRODUKTY = [
       { nazev: "Sada 6 ks S", cena: 390 },
     ],
     material: "PLA",
+    pece: "zavesne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -714,6 +640,7 @@ const PRODUKTY = [
       { nazev: "Sada 3 ks (S, M, L)", cena: 80 },
     ],
     material: "PLA",
+    pece: "zavesne",
     popis: "",
     barvy: ["Bílá", "Zelená", "Červená", "Zlatá"],
     obrazky: [],
@@ -741,6 +668,7 @@ const PRODUKTY = [
       { nazev: "Velká", cena: 250 },
     ],
     material: "PLA",
+    pece: "vaza",
     popis: "",
     barvy: ["Béžová", "Zelená", "Vínová"],
     obrazky: [],
@@ -758,7 +686,7 @@ const PRODUKTY = [
   {
     id: "duch-s-dyni",
     nazev: "Duch s dýní na hlavě",
-    kategorie: ["Halloween", "Hračky"],
+    kategorie: "Halloween",
     cena: 50,
     material: "PLA",
     popis: "",
@@ -771,6 +699,7 @@ const PRODUKTY = [
     kategorie: "Domácnost",
     cena: 90,
     material: "PLA",
+    pece: "led",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -788,6 +717,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: ["Růžová", "Modrá"],
     skladem: { "Růžová": 2, "Modrá": 0 },
@@ -799,27 +729,14 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěná flexibilní ještěrka
-
       Hledáte originální dekoraci, stylový doplněk na pracovní stůl nebo skvělý dárek, který prostě neomrzí? Tato 3D tištěná ještěrka si vás získá na první dotek!
 
       Díky pohyblivým kloubům je úžasně ohebná a živá. Skvěle funguje jako antistresová hračka do ruky, veselá ozdoba do pokoje i nevšední společník na monitor či poličku.
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Unikátní detail: Výběr barevného provedení očí se může u jednotlivých kusů nepatrně lišit, každý kousek je tak originál.
-      - Perfektní pro každého: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o ještěrku pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte ještěrku za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Vhodné pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může způsobit křehnutí materiálu a ztrátu barev.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Přidejte si do života trochu barevné hravosti — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: ["obrazky/jesterka-1.jpg", "obrazky/jesterka-2.jpg"],
@@ -880,6 +797,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -890,6 +808,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -900,6 +819,7 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -907,9 +827,10 @@ const PRODUKTY = [
   {
     id: "vejce",
     nazev: "Vejce",
-    kategorie: "Hračky",
+    kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
     popis: "",
     barvy: [],
     obrazky: [],
@@ -917,7 +838,7 @@ const PRODUKTY = [
   {
     id: "kostlivec",
     nazev: "Kostlivec",
-    kategorie: "Hračky",
+    kategorie: "Halloween",
     cena: 0,
     material: "PLA",
     popis: "",
@@ -940,27 +861,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěná flexibilní krakatice
-
       Ponořte se do mořských hlubin s touto fascinující 3D tištěnou krakaticí! Zaujme na první pohled svými dlouhými rameny a výraznýma zvědavýma očima.
 
       Díky velkému množství ohebných kloubů v ramenou je úžasně tvárná a v rukou působí neuvěřitelně živě. Skvěle poslouží jako nepřehlédnutelná dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky mořského světa.
 
       - Ohebná ramena: Množství samostatných kloubů umožňuje plynulý a přirozený pohyb ramen.
       - Detailní zpracování: Precizní 3D tisk s důrazem na výrazné oči a strukturu chapadel.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Skvělá antistresová pomůcka do ruky pro dospělé i zábavný společník pro starší děti.
-
-      Péče a údržba (jak o krakatici pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krakatici za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svůj prostor tímto mořským tvorem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],
@@ -971,27 +880,15 @@ const PRODUKTY = [
     kategorie: "Zvířata",
     cena: 0,
     material: "PLA",
+    pece: "ohebne",
+    autor: "KOGI3D",
     popis: `
-      3D tištěný flexibilní krokodýl
-
       Přidejte do své sbírky trochu divoké přírody! Tento ohebný krokodýl zaujme na první pohled svým přátelským výrazem, ručně malovanýma očima a propracovanými detaily, jako jsou malé zuby či šedé drápky.
 
       Díky pohyblivým kloubům v nohách i článkovaném těle je úžasně ohebný a skvěle padne do ruky. Poslouží jako veselá dekorace na stůl či poličku, chytlavá antistresová hračka i originální dárek pro všechny milovníky zvířat.
 
       - Ruční práce: Oči a drobné detaily jsou pečlivě ručně malované, takže každý krokodýl je jedinečný originál.
       - Detailní zpracování: Precizní 3D tisk s důrazem na strukturovaný hřbet, plynulý pohyb kloubů a výrazné drápy.
-      - Materiál: Vyrobeno z lehké a pevné biologicky odbouratelné plastové hmoty PLA (z kukuřičného škrobu).
-      - Pro radost i klid: Dospělým pomůže odbourat stres při práci, děti zabaví na dlouhé hodiny.
-
-      Péče a údržba (jak o krokodýla pečovat):
-
-      - Chraňte před teplem: Materiál PLA měkne při teplotách nad 50–60 °C. Nenechávejte krokodýla za sklem na přímém letním slunci, v rozpáleném autě ani blízko zdrojů tepla.
-      - Pouze do interiéru: Dlouhodobé vystavení UV záření a dešti může oslabit barvy a materiál.
-      - Není určeno pro nejmenší děti: Obsahuje drobné pohyblivé částice.
-
-      Oživte svůj stůl tímto originálním krokodýlem — vyberte si svou oblíbenou barevnou variantu ještě dnes!
-
-      Autor modelu / design: KOGI3D
     `,
     barvy: [],
     obrazky: [],

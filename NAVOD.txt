@@ -19,6 +19,14 @@ Kusy skladem:
   Když řádek skladem u výrobku chybí, počet se nehlídá.
   Po každé objednávce počet sami snižte – web si prodané kusy nepamatuje.
 
+Barvy:
+  U výrobku napište barvy, ve kterých ho tisknete, např. barvy: ["Bílá", "Zelená"],
+  Názvy musí být stejné jako v seznamu BARVY v data\produkty.js (velká a malá písmena nevadí).
+  Barva, která v seznamu BARVY chybí, se na webu nezobrazí.
+  Novou barvu přidáte na konec seznamu BARVY řádkem s názvem a kódem odstínu:
+    { nazev: "Stříbrná", hex: "#C0C0C0" },
+  Kód odstínu najdete třeba na webu htmlcolorcodes.com.
+
 Velikosti s vlastní cenou (např. S, M, L):
   Místo řádku cena napište u výrobku seznam velikostí:
     velikosti: [
@@ -31,9 +39,16 @@ Velikosti s vlastní cenou (např. S, M, L):
 Popis výrobku:
   Delší popis pište mezi zpětné uvozovky ` (na české klávesnici pravý Alt + 7), pak může mít víc řádků.
   Prázdný řádek = nový odstavec.
-  Řádek začínající „- “ = odrážka; text před dvojtečkou bude tučně (- Materiál: PLA z kukuřičného škrobu).
-  Samostatný řádek končící dvojtečkou = mezititulek (Péče a údržba:).
-  První odstavec se zobrazí výrazněji (např. „3D tištěná flexibilní ještěrka“).
+  Řádek začínající „- “ = odrážka; text před dvojtečkou bude tučně (- Ruční práce: Oči jsou ručně malované.).
+  Samostatný řádek končící dvojtečkou = mezititulek (Co je v balení:).
+  První odstavec se zobrazí výrazněji.
+
+Materiál a péče (blok pod popisem každého výrobku):
+  Společný text je v data\produkty.js v MATERIAL_A_PECE – stačí ho upravit jednou a změní se u všech výrobků.
+  Do popisu výrobku proto materiál ani péči už nepište.
+  Řádky podle typu výrobku jsou v seznamu PECE (ohebne, led, vaza, miska, podtacky, zavesne).
+  U výrobku je zapnete řádkem pece: "ohebne", nebo víc typů najednou: pece: ["led", "zavesne"],
+  Autor modelu: řádek autor: "KOGI3D", – pod blokem se ukáže „Autor modelu: KOGI3D“.
 
 Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).

@@ -5,7 +5,10 @@
 
   const app = document.getElementById("app");
   const kc = new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 });
-  const barvaPodleNazvu = new Map(BARVY.map((b) => [b.nazev, b]));
+  // Názvy barev se porovnávají bez ohledu na velká a malá písmena („vínová“ = „Vínová“).
+  const klicBarvy = (nazev) => String(nazev ?? "").trim().toLocaleLowerCase("cs");
+  const barvaPodleNazvu = new Map(BARVY.map((b) => [klicBarvy(b.nazev), b]));
+  const najdiBarvu = (nazev) => barvaPodleNazvu.get(klicBarvy(nazev));
   const MAX_KUSU = 99;
 
   function esc(text) {
@@ -16,13 +19,13 @@
     return PRODUKTY.find((p) => p.id === id);
   }
 
-  /** Kategorie výrobku jako seznam – v produkty.js může být jedna ("Zvířata") i víc (["Zvířata", "Hračky"]). */
+  /** Kategorie výrobku jako seznam – v produkty.js může být jedna ("Zvířata") i víc (["Dekorace", "Podzim"]). */
   function kategorieProduktu(p) {
     return [].concat(p.kategorie || []);
   }
 
   function barvyProduktu(p) {
-    return (p.barvy || []).map((n) => barvaPodleNazvu.get(n)).filter(Boolean);
+    return (p.barvy || []).map(najdiBarvu).filter(Boolean);
   }
 
   /** Sklad je v produkty.js buď jedno číslo (skladem: 3), nebo počet pro každou barvu (skladem: { "Bílá": 2 }). */
@@ -33,7 +36,7 @@
   /** Kolik kusů máme skladem. Infinity = řádek skladem u výrobku chybí, počet se nehlídá. */
   function skladem(p, barva) {
     if (p.skladem === undefined || p.skladem === null || p.skladem === "") return Infinity;
-    const n = skladPodleBarev(p) ? p.skladem[barva] : p.skladem;
+    const n = skladPodleBarev(p) ? p.skladem[Object.keys(p.skladem).find((k) => klicBarvy(k) === klicBarvy(barva))] : p.skladem;
     return Math.max(0, Math.floor(Number(n)) || 0);
   }
 
@@ -89,10 +92,23 @@
       .join("");
   }
 
+  /** Blok „Materiál a péče“ pod popisem: společné odrážky z MATERIAL_A_PECE, za nimi doplňky podle pece u výrobku
+      (pece: "ohebne" nebo ["led", "zavesne"]) a nakonec autor modelu, pokud je vyplněný. */
+  function peceHtml(p) {
+    const doplnky = [].concat(p.pece || []).map((typ) => PECE[typ] || "");
+    const odrazky = [MATERIAL_A_PECE, ...doplnky]
+      .join("\n")
+      .split("\n")
+      .map((r) => r.trim())
+      .filter(Boolean)
+      .join("\n");
+    return `<h3>Materiál a péče</h3>${popisHtml(odrazky)}${p.autor ? popisHtml(`Autor modelu: ${p.autor}`) : ""}`;
+  }
+
   /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“). */
   function lzePridat(p, barva, krome) {
     const vKosiku = kosik
-      .filter((i) => i !== krome && i.id === p.id && (!skladPodleBarev(p) || i.barva === barva))
+      .filter((i) => i !== krome && i.id === p.id && (!skladPodleBarev(p) || klicBarvy(i.barva) === klicBarvy(barva)))
       .reduce((s, i) => s + i.pocet, 0);
     return Math.max(0, Math.min(MAX_KUSU, skladem(p, barva) - vKosiku));
   }
@@ -126,7 +142,13 @@
   function nactiKosik() {
     try {
       const data = JSON.parse(localStorage.getItem(KLIC_KOSIKU) || "[]");
-      return Array.isArray(data) ? data.filter((i) => i && najdiProdukt(i.id) && platnaVelikost(najdiProdukt(i.id), i.velikost)) : [];
+      if (!Array.isArray(data)) return [];
+      const platne = data.filter((i) => i && najdiProdukt(i.id) && platnaVelikost(najdiProdukt(i.id), i.velikost));
+      // Barvu uloženou dřív jinými písmeny („vínová“) přepíše na název ze seznamu BARVY („Vínová“).
+      platne.forEach((i) => {
+        if (i.barva && najdiBarvu(i.barva)) i.barva = najdiBarvu(i.barva).nazev;
+      });
+      return platne;
     } catch {
       return [];
     }
@@ -488,16 +510,18 @@
           <div>
             ${p.rucneMalovano ? stitekMalovano() : ""}
             <h1 class="chrome-text">${esc(p.nazev)}</h1>
-            <p class="price" id="cena">${velikosti.length && !vyprodano(p) ? kc.format(cenaProduktu(p)) : cenaNeboVyprodano(p)}</p>
-            <dl class="specs">
-              <div class="card"><dt>Materiál</dt><dd>${esc(p.material)}</dd></div>
-              ${p.rozmery ? `<div class="card"><dt>Rozměry</dt><dd>${esc(p.rozmery)}</dd></div>` : ""}
-              ${p.dobaVyroby ? `<div class="card"><dt>Doba výroby</dt><dd>${esc(p.dobaVyroby)}</dd></div>` : ""}
-            </dl>
+            ${p.rozmery || p.dobaVyroby
+              ? `<dl class="specs">
+                  ${p.rozmery ? `<div class="card"><dt>Rozměry</dt><dd>${esc(p.rozmery)}</dd></div>` : ""}
+                  ${p.dobaVyroby ? `<div class="card"><dt>Doba výroby</dt><dd>${esc(p.dobaVyroby)}</dd></div>` : ""}
+                </dl>`
+              : ""}
+            <div class="detail-desc">${p.popis ? popisHtml(p.popis) : ""}${peceHtml(p)}</div>
             <div class="card buy">
               ${vyberVelikosti}
               ${vyberBarvy}
               <div class="buy-row">
+                <p class="price" id="cena">${velikosti.length && !vyprodano(p) ? kc.format(cenaProduktu(p)) : cenaNeboVyprodano(p)}</p>
                 <div class="qty">
                   <button type="button" data-zmena="-1" aria-label="Méně">−</button>
                   <output id="pocet" aria-live="polite">1</output>
@@ -507,7 +531,6 @@
               </div>
               <p class="hint" id="sklad-info" aria-live="polite" hidden></p>
             </div>
-            ${p.popis ? `<div class="detail-desc">${popisHtml(p.popis)}</div>` : ""}
           </div>
         </div>
       </div>`;
@@ -654,7 +677,7 @@
     document.getElementById("polozky").innerHTML = kosik
       .map((pol, n) => {
         const p = najdiProdukt(pol.id);
-        const b = barvaPodleNazvu.get(pol.barva);
+        const b = najdiBarvu(pol.barva);
         return `<li class="card cart-item">
           <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(p.obrazky && p.obrazky[0], p.nazev, PRODUKTY.indexOf(p))}</a>
           <div class="cart-item-body">

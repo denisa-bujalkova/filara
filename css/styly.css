@@ -1094,9 +1094,22 @@ textarea.input {
   gap: 40px;
 }
 
+/* Fotky výrobku: na mobilu nejvýš 300 px na střed, na počítači užší sloupec vedle textu. */
+.detail > div:first-child {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
 @media (min-width: 768px) {
   .detail {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 3fr;
+    align-items: start;
+  }
+
+  .detail > div:first-child {
+    max-width: 380px;
+    margin: 0;
   }
 }
 
@@ -1144,14 +1157,15 @@ textarea.input {
 }
 
 .detail .price {
-  margin: 12px 0 0;
-  font-size: 26px;
+  margin: 0;
+  font-size: 24px;
 }
 
-/* Popis výrobku pod nákupem: odstavce, mezititulky a odrážky (formát viz produkty.js). */
+/* Popis výrobku nad nákupem: odstavce, mezititulky a odrážky (formát viz produkty.js). */
 .detail-desc {
-  margin-top: 28px;
+  margin-top: 20px;
   color: var(--muted);
+  font-size: 14px;
 }
 
 .detail-desc p {
@@ -1159,14 +1173,14 @@ textarea.input {
 }
 
 .detail-desc > p:first-child {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
 }
 
 .detail-desc h3 {
   margin: 22px 0 10px;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text);
 }
 
