@@ -28,6 +28,20 @@
     return (p.barvy || []).map(najdiBarvu).filter(Boolean);
   }
 
+  /** Fotky výrobku: buď jeden seznam pro všechny barvy (obrazky: ["a.jpg", "b.jpg"]), nebo fotky pro každou barvu
+      zvlášť (obrazky: { "Modrá": ["a.jpg"], "Zelená": ["b.jpg"] }). Bez zadané barvy vrátí fotky první barvy výrobku. */
+  function fotkyProduktu(p, barva) {
+    const o = p.obrazky;
+    if (!o) return [];
+    if (Array.isArray(o)) return o;
+    const klice = Object.keys(o);
+    const k =
+      klice.find((k) => barva && klicBarvy(k) === klicBarvy(barva)) ||
+      klice.find((k) => klicBarvy(k) === klicBarvy((p.barvy || [])[0])) ||
+      klice[0];
+    return k ? [].concat(o[k]) : [];
+  }
+
   /** Sklad je v produkty.js buď jedno číslo (skladem: 3), nebo počet pro každou barvu (skladem: { "Bílá": 2 }). */
   function skladPodleBarev(p) {
     return typeof p.skladem === "object" && p.skladem !== null;
@@ -237,7 +251,7 @@
       .map((b) => `<span style="background:${esc(b.hex)}" title="${esc(b.nazev)}"></span>`)
       .join("");
     return `<a href="#produkt/${encodeURIComponent(p.id)}" class="card product-card">
-      <div class="thumb">${obrazek(p.obrazky && p.obrazky[0], p.nazev, i)}${p.rucneMalovano ? stitekMalovano() : ""}</div>
+      <div class="thumb">${obrazek(fotkyProduktu(p)[0], p.nazev, i)}${p.rucneMalovano ? stitekMalovano() : ""}</div>
       <div class="product-card-body">
         <h3>${esc(p.nazev)}</h3>
         <div class="product-card-meta">
@@ -465,18 +479,25 @@
     vypisNabidky();
   }
 
+  /** Fotky výrobku vedle sebe; přepínají se šipkami nebo posunutím prstem. Tečky dole ukazují, kolikátá fotka je vidět. */
+  function galerieHtml(p, fotky) {
+    const seznam = fotky.length ? fotky : [null];
+    const ovladani =
+      seznam.length > 1
+        ? `<button type="button" class="gallery-arrow prev" data-posun="-1" aria-label="Předchozí fotka">‹</button>
+           <button type="button" class="gallery-arrow next" data-posun="1" aria-label="Další fotka">›</button>
+           <div class="gallery-dots">${seznam.map((_, n) => `<i${n === 0 ? ' class="aktivni"' : ""}></i>`).join("")}</div>`
+        : "";
+    return `<div class="card gallery-main">
+      <div class="gallery-track">${seznam.map((f) => `<div class="gallery-slide">${obrazek(f, p.nazev, PRODUKTY.indexOf(p))}</div>`).join("")}</div>
+      ${ovladani}
+    </div>`;
+  }
+
   function detail(id) {
     const p = najdiProdukt(id);
     if (!p) return nenalezeno();
-    const i = PRODUKTY.indexOf(p);
-    const fotky = p.obrazky || [];
     const barvy = barvyProduktu(p);
-    const nahledy =
-      fotky.length > 1
-        ? `<div class="gallery-thumbs">${fotky
-            .map((f, n) => `<button type="button" data-foto="${n}" aria-current="${n === 0}" aria-label="Obrázek ${n + 1}"><img src="${esc(f)}" alt="" /></button>`)
-            .join("")}</div>`
-        : "";
     // Vyprodaná barva je přeškrtnutá; předem se vybere první barva, která je skladem.
     const vychozi = barvy.find((b) => skladem(p, b.nazev) > 0) || barvy[0];
     const vyberBarvy = barvy.length
@@ -503,10 +524,7 @@
       <div class="container page">
         <nav class="breadcrumb"><a href="#nabidka">Nabídka</a> / <a href="${adresaKategorie(kat)}">${esc(kat)}</a></nav>
         <div class="detail">
-          <div>
-            <div class="card gallery-main" id="hlavni-foto">${obrazek(fotky[0], p.nazev, i)}</div>
-            ${nahledy}
-          </div>
+          <div id="galerie">${galerieHtml(p, fotkyProduktu(p, vychozi && vychozi.nazev))}</div>
           <div>
             ${p.rucneMalovano ? stitekMalovano() : ""}
             <h1 class="chrome-text">${esc(p.nazev)}</h1>
@@ -541,14 +559,27 @@
     if (!p) return;
     document.title = `${p.nazev} – 3D tisk | ${OBCHOD.nazev}`;
 
-    app.querySelectorAll("[data-foto]").forEach((btn) =>
-      btn.addEventListener("click", () => {
-        document.getElementById("hlavni-foto").innerHTML = obrazek(p.obrazky[Number(btn.dataset.foto)], p.nazev, 0);
-        app.querySelectorAll("[data-foto]").forEach((b) => b.setAttribute("aria-current", String(b === btn)));
-      }),
-    );
-
     let barva = app.querySelector('[data-barva][aria-pressed="true"]')?.dataset.barva || null;
+    const galerie = document.getElementById("galerie");
+    // Šipky posunou o jednu fotku (z poslední zpět na první); tečky sledují posun i při tažení prstem.
+    galerie.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-posun]");
+      if (!btn) return;
+      const pas = galerie.querySelector(".gallery-track");
+      const pocetFotek = pas.children.length;
+      const ted = Math.round(pas.scrollLeft / pas.clientWidth);
+      const dalsi = (ted + Number(btn.dataset.posun) + pocetFotek) % pocetFotek;
+      pas.scrollTo({ left: dalsi * pas.clientWidth, behavior: "smooth" });
+    });
+    galerie.addEventListener(
+      "scroll",
+      (e) => {
+        if (!e.target.classList || !e.target.classList.contains("gallery-track")) return;
+        const ted = Math.round(e.target.scrollLeft / e.target.clientWidth);
+        galerie.querySelectorAll(".gallery-dots i").forEach((t, n) => t.classList.toggle("aktivni", n === ted));
+      },
+      true,
+    );
     let velikost = velikostiProduktu(p)[0]?.nazev;
     let pocet = 1;
     const vystupPoctu = document.getElementById("pocet");
@@ -572,6 +603,10 @@
         barva = btn.dataset.barva;
         document.getElementById("nazev-barvy").textContent = barva;
         app.querySelectorAll("[data-barva]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+        // Má-li výrobek fotky pro každou barvu zvlášť, ukážou se fotky zvolené barvy.
+        if (p.obrazky && !Array.isArray(p.obrazky)) {
+          galerie.innerHTML = galerieHtml(p, fotkyProduktu(p, barva));
+        }
         obnovPocet();
       }),
     );
@@ -679,7 +714,7 @@
         const p = najdiProdukt(pol.id);
         const b = najdiBarvu(pol.barva);
         return `<li class="card cart-item">
-          <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(p.obrazky && p.obrazky[0], p.nazev, PRODUKTY.indexOf(p))}</a>
+          <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(fotkyProduktu(p, pol.barva)[0], p.nazev, PRODUKTY.indexOf(p))}</a>
           <div class="cart-item-body">
             <div class="cart-item-top"><a href="#produkt/${encodeURIComponent(p.id)}">${esc(p.nazev)}</a><span>${kc.format(cenaProduktu(p, pol.velikost) * pol.pocet)}</span></div>
             ${pol.velikost ? `<div class="cart-item-meta">Velikost: ${esc(pol.velikost)}</div>` : ""}

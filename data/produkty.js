@@ -5,7 +5,9 @@
 
   - Text pište vždy do uvozovek "..." a za každou položkou nechte čárku.
   - Fotky dejte do složky "obrazky" a u produktu je uveďte, např. obrazky: ["obrazky/vaza-1.jpg", "obrazky/vaza-2.jpg"].
-    Bez fotky se zobrazí barevný zástupný obrázek.
+    Bez fotky se zobrazí barevný zástupný obrázek. Fotka uvedená první se ukáže jako hlavní.
+    Fotky pro každou barvu zvlášť (po kliknutí na barvu se ukážou jen její fotky):
+      obrazky: { "Modrá": ["obrazky/had-modra-1.jpg", "obrazky/had-modra-2.jpg"], "Zelená": ["obrazky/had-zelena-1.jpg"] },
   - Barvy u produktu musí mít stejný název jako v seznamu BARVY níže (na velkých a malých písmenech nezáleží).
     Barva, která v seznamu BARVY chybí, se na webu nezobrazí.
   - doporuceny: true = produkt se ukáže na úvodní stránce.
@@ -55,6 +57,7 @@ const DOPRAVA = [
 // Barvy, ze kterých si zákazník vybírá. Každá má název a odstín jako kód #RRGGBB (podle něj se kreslí kolečko).
 // Novou barvu přidáte řádkem na konec seznamu, např.:  { nazev: "Stříbrná", hex: "#C0C0C0" },
 // Kód odstínu najdete třeba na webu htmlcolorcodes.com. Stejný název pak napište k výrobku do barvy: [...].
+// Přelévavá barva (přechod dvou odstínů): hex: "linear-gradient(135deg, #2563EB, #C084FC)",
 const BARVY = [
   { nazev: "Bílá", hex: "#F5F5F4" },
   { nazev: "Černá", hex: "#1C1917" },
@@ -71,6 +74,12 @@ const BARVY = [
   { nazev: "Tmavě hnědá", hex: "#5A2D00" },
   { nazev: "Světle hnědá", hex: "#CAA580" },
   { nazev: "Zlatá", hex: "#D4AF37" },
+  { nazev: "Modrofialová", hex: "linear-gradient(135deg, #2563EB, #C084FC)" },
+  { nazev: "Zelenomodrá", hex: "linear-gradient(135deg, #22C55E, #0E7490)" },
+  { nazev: "Fosforeskující", hex: "#F3EBA6" },
+  { nazev: "Červenozlatá", hex: "linear-gradient(135deg, #DC2626, #D4AF37)" },
+  { nazev: "Modrozelená", hex: "linear-gradient(135deg, #3B82F6, #84CC16)" },
+  { nazev: "Oranžovošedivá", hex: "linear-gradient(135deg, #F97316, #A8A29E)" },
 ];
 
 const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Klíčenky"];
@@ -371,8 +380,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
-    barvy: [],
-    obrazky: ["obrazky/drak-1.jpg"],
+    barvy: ["Zelenomodrá", "Modrofialová", "Červená", "Fosforeskující"],
+    obrazky: {
+      "Zelenomodrá": ["obrazky/drak-zelenomodra.jpg"],
+      "Modrofialová": ["obrazky/drak-modrofialova.jpg"],
+      "Červená": ["obrazky/drak-cervena.jpg"],
+      "Fosforeskující": ["obrazky/drak-fosforeskujici.jpg"],
+    },
   },
   {
     id: "snehova-vlocka",
@@ -466,7 +480,7 @@ const PRODUKTY = [
     nazev: "Had trnitý",
     kategorie: "Zvířata",
     velikosti: [
-      { nazev: "Malý", cena: 250 },
+      // { nazev: "Malý", cena: 250 },   // zatím skrytá – zapnete smazáním // na začátku řádku
       { nazev: "Velký", cena: 490 },
     ],
     material: "PLA",
@@ -479,8 +493,12 @@ const PRODUKTY = [
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na detailní ostny a plynulý, přirozený pohyb kloubů.
     `,
-    barvy: [],
-    obrazky: [],
+    barvy: ["Zelená", "Modrozelená", "Oranžovošedivá"],
+    obrazky: {
+      "Zelená": ["obrazky/had-trnity-zelena-1.jpg", "obrazky/had-trnity-zelena-2.jpg"],
+      "Modrozelená": ["obrazky/had-trnity-modrozelena.jpg"],
+      "Oranžovošedivá": ["obrazky/had-trnity-oranzovosediva.jpg"],
+    },
   },
   {
     id: "had-trnity-se-stromem",
@@ -498,8 +516,11 @@ const PRODUKTY = [
       - Set 2 v 1: Obsahuje dlouhého flexibilního trnitého hada a padnoucí stojánek ve tvaru větve.
       - Detailní zpracování: Precizní 3D tisk s důrazem na plastické šupiny/ostny, plynulý pohyb kloubů a věrohodnou strukturu dřeva.
     `,
-    barvy: [],
-    obrazky: [],
+    barvy: ["Zelená", "Modrozelená"],
+    obrazky: {
+      "Zelená": ["obrazky/had-trnity-se-stromem-zelena-1.jpg", "obrazky/had-trnity-se-stromem-zelena-2.jpg"],
+      "Modrozelená": ["obrazky/had-trnity-se-stromem-modrozelena-1.jpg", "obrazky/had-trnity-se-stromem-modrozelena-2.jpg"],
+    },
   },
   {
     id: "had-hladky-se-stromem",
@@ -562,8 +583,8 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    barvy: ["Červenozlatá"],
+    obrazky: ["obrazky/draci-vejce-1.jpg", "obrazky/draci-vejce-2.jpg"],
   },
   {
     id: "had-kogi",
@@ -573,8 +594,11 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    barvy: ["Modrá", "Zelená"],
+    obrazky: {
+      "Modrá": ["obrazky/had-kogi-modra-1.jpg", "obrazky/had-kogi-modra-2.jpg"],
+      "Zelená": ["obrazky/had-kogi-zelena-1.jpg", "obrazky/had-kogi-zelena-2.jpg"],
+    },
   },
   {
     id: "stromek-s-hvezdou",

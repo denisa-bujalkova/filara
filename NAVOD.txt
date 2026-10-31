@@ -53,6 +53,15 @@ Materiál a péče (blok pod popisem každého výrobku):
 Fotky výrobků:
   1. Nahrajte fotky do složky "obrazky" (nejlépe čtvercové JPG, názvy bez mezer a diakritiky, např. drak-1.jpg).
   2. U produktu v data\produkty.js napište: obrazky: ["obrazky/drak-1.jpg", "obrazky/drak-2.jpg"],
+     První fotka v seznamu je hlavní.
+  3. Fotky pro každou barvu zvlášť – po kliknutí na barvu se ukážou jen fotky té barvy:
+       obrazky: {
+         "Modrá": ["obrazky/had-kogi-modra-1.jpg", "obrazky/had-kogi-modra-2.jpg"],
+         "Zelená": ["obrazky/had-kogi-zelena-1.jpg"],
+       },
+     Názvy barev musí být stejné jako v barvy: [...]. V nabídce se ukáže první fotka první barvy.
+  Fotky z fotoaparátu jsou velké (několik MB) a formát ORF prohlížeč neumí zobrazit.
+  Před nahráním je zmenšete a uložte jako JPG (např. kolem 1200 px na delší straně).
 
 Fotky v kruhu na úvodní stránce:
   Střídají se fotky ze seznamu UVODNI_FOTKY v data\produkty.js (teď obrazky\uvod-1.jpg až uvod-5.jpg).
