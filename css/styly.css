@@ -1100,10 +1100,16 @@ textarea.input {
   }
 }
 
-/* Fotky výrobku: o čtvrtinu užší než sloupec, na střed. Přepínají se šipkami nebo posunutím prstem. */
+/* Fotky výrobku: na mobilu přes celou šířku, na počítači o čtvrtinu užší než sloupec a na střed.
+   Přepínají se šipkami nebo posunutím prstem. */
 #galerie {
-  width: 75%;
   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  #galerie {
+    width: 75%;
+  }
 }
 
 .gallery-main {
