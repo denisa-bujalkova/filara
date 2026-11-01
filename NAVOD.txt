@@ -36,6 +36,27 @@ Velikosti s vlastní cenou (např. S, M, L):
   Zákazník si velikost vybere tlačítkem, v nabídce se ukáže „od 290 Kč“.
   Velikost je vidět i v košíku a v e-mailu s objednávkou.
 
+Sady s výběrem barev:
+  K velikosti, která je sada, přidejte sada. Zákazník pak zvolí barvu pro každý kus zvlášť.
+    { nazev: "Sada 3 ks (S, M, L)", cena: 80, sada: ["S", "M", "L"] },   (barva pro každou velikost)
+    { nazev: "Sada 3 ks S", cena: 210, sada: 3 },                        (barva pro 1., 2. a 3. kus)
+  Zvolené barvy jsou vidět v košíku i v e-mailu s objednávkou.
+  Skladem: číslo (skladem: 3) počítá jednu sadu jako 1 kus. Počet podle barev ubere z každé barvy
+  tolik kusů, kolik jich je v sadě.
+
+Varianty (např. různé tvary vločky):
+  Místo velikostí napište varianty, každá má svou cenu a fotky:
+    varianty: [
+      { nazev: "Varianta 1", cena: 90 },
+      { nazev: "Varianta 5", cena: 40, barvy: ["Bílá"] },
+    ],
+  barvy: ["Bílá"] u varianty znamená, že v ní jde vybrat jen tato barva.
+  Fotky se píšou pro barvu a variantu, oddělené čárkou:
+    obrazky: {
+      "Bílá, Varianta 1": ["obrazky/vlocka-bila-1.jpg"],
+      "Bílá, Varianta 5": ["obrazky/vlocka-bila-5-1.jpg", "obrazky/vlocka-bila-5-2.jpg"],
+    },
+
 Popis výrobku:
   Delší popis pište mezi zpětné uvozovky ` (na české klávesnici pravý Alt + 7), pak může mít víc řádků.
   Prázdný řádek = nový odstavec.

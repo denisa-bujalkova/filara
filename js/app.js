@@ -29,14 +29,17 @@
   }
 
   /** Fotky výrobku: buď jeden seznam pro všechny barvy (obrazky: ["a.jpg", "b.jpg"]), nebo fotky pro každou barvu
-      zvlášť (obrazky: { "Modrá": ["a.jpg"], "Zelená": ["b.jpg"] }). Bez zadané barvy vrátí fotky první barvy výrobku. */
-  function fotkyProduktu(p, barva) {
+      zvlášť (obrazky: { "Modrá": ["a.jpg"], "Zelená": ["b.jpg"] }). Bez zadané barvy vrátí fotky první barvy výrobku.
+      U výrobku s variantami je klíč barva i varianta (obrazky: { "Bílá, Varianta 1": ["a.jpg"] }). */
+  function fotkyProduktu(p, barva, velikost) {
     const o = p.obrazky;
     if (!o) return [];
     if (Array.isArray(o)) return o;
     const klice = Object.keys(o);
+    const nazevBarvy = barva || (p.barvy || [])[0];
+    const hledany = p.varianty ? `${nazevBarvy}, ${velikost || velikostiProduktu(p)[0]?.nazev}` : nazevBarvy;
     const k =
-      klice.find((k) => barva && klicBarvy(k) === klicBarvy(barva)) ||
+      klice.find((k) => klicBarvy(k) === klicBarvy(hledany)) ||
       klice.find((k) => klicBarvy(k) === klicBarvy((p.barvy || [])[0])) ||
       klice[0];
     return k ? [].concat(o[k]) : [];
@@ -61,9 +64,45 @@
     return barvy.every((b) => skladem(p, b) === 0);
   }
 
-  /** Velikosti výrobku z produkty.js, např. velikosti: [{ nazev: "S", cena: 290 }, { nazev: "M", cena: 390 }]. */
+  /** Velikosti výrobku z produkty.js, např. velikosti: [{ nazev: "S", cena: 290 }, { nazev: "M", cena: 390 }].
+      Varianty (varianty: [{ nazev: "Varianta 1", cena: 90 }]) fungují stejně, jen se jinak jmenují a mají vlastní fotky. */
   function velikostiProduktu(p) {
-    return (Array.isArray(p.velikosti) ? p.velikosti : []).filter((v) => v && v.nazev);
+    const seznam = p.varianty || p.velikosti;
+    return (Array.isArray(seznam) ? seznam : []).filter((v) => v && v.nazev);
+  }
+
+  function popisekVelikosti(p) {
+    return p.varianty ? "Varianta" : "Velikost";
+  }
+
+  function najdiVelikost(p, velikost) {
+    return velikostiProduktu(p).find((v) => v.nazev === velikost);
+  }
+
+  /** Kusy v sadě, u kterých si zákazník volí barvu: sada: ["S", "M", "L"] (podle velikostí), sada: 3 (1. kus, 2. kus, 3. kus). */
+  function kusySady(v) {
+    if (!v || !v.sada) return [];
+    return Array.isArray(v.sada) ? v.sada : Array.from({ length: Number(v.sada) || 0 }, (_, n) => `${n + 1}. kus`);
+  }
+
+  /** Barvy, které jdou zvolit: u varianty s vlastním seznamem (barvy: ["Bílá"]) jen ty, jinak všechny barvy výrobku. */
+  function barvyVelikosti(p, velikost) {
+    const v = najdiVelikost(p, velikost);
+    const barvy = barvyProduktu(p);
+    return v && v.barvy ? barvy.filter((b) => v.barvy.some((n) => klicBarvy(n) === klicBarvy(b.nazev))) : barvy;
+  }
+
+  /** Všechny barvy, které položka košíku obsahuje (u sady barva každého kusu). */
+  function barvyPolozky(i) {
+    return i.sadaBarvy || [i.barva];
+  }
+
+  /** Barvy sady pro košík a e-mail: u sady podle velikostí „S: Bílá“, u kusů stejné velikosti „2× Vínová“. */
+  function popisSady(p, pol) {
+    const v = najdiVelikost(p, pol.velikost);
+    if (!pol.sadaBarvy || !v) return [];
+    if (Array.isArray(v.sada)) return pol.sadaBarvy.map((barva, n) => ({ barva, text: `${v.sada[n]}: ${barva}` }));
+    return [...new Set(pol.sadaBarvy)].map((barva) => ({ barva, text: `${pol.sadaBarvy.filter((b) => b === barva).length}× ${barva}` }));
   }
 
   /** Cena ve zvolené velikosti; výrobek bez velikostí má jednu cenu (cena: 150). */
@@ -119,12 +158,18 @@
     return `<h3>Materiál a péče</h3>${popisHtml(odrazky)}${p.autor ? popisHtml(`Autor modelu: ${p.autor}`) : ""}`;
   }
 
-  /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“). */
+  /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“).
+      „barva“ může být i seznam barev sady: při počtu podle barev sada ubere z každé barvy tolik, kolikrát je v ní. */
   function lzePridat(p, barva, krome) {
-    const vKosiku = kosik
-      .filter((i) => i !== krome && i.id === p.id && (!skladPodleBarev(p) || klicBarvy(i.barva) === klicBarvy(barva)))
-      .reduce((s, i) => s + i.pocet, 0);
-    return Math.max(0, Math.min(MAX_KUSU, skladem(p, barva) - vKosiku));
+    const polozky = kosik.filter((i) => i !== krome && i.id === p.id);
+    if (!skladPodleBarev(p)) return Math.max(0, Math.min(MAX_KUSU, skladem(p) - polozky.reduce((s, i) => s + i.pocet, 0)));
+    const stejna = (a) => (b) => klicBarvy(a) === klicBarvy(b);
+    const chci = [].concat(barva);
+    const volno = chci.map((b) => {
+      const vKosiku = polozky.reduce((s, i) => s + i.pocet * barvyPolozky(i).filter(stejna(b)).length, 0);
+      return Math.floor((skladem(p, b) - vKosiku) / chci.filter(stejna(b)).length);
+    });
+    return Math.max(0, Math.min(MAX_KUSU, ...volno));
   }
 
   /** Fotka produktu, nebo zástupný obrázek ve stylu FILARA, dokud fotka není. */
@@ -153,11 +198,17 @@
     return vel.length ? vel.some((v) => v.nazev === velikost) : !velikost;
   }
 
+  /** Počet barev v položce musí sedět s počtem kusů sady (sada se v produkty.js mohla změnit). */
+  function platnaSada(p, i) {
+    const kusy = kusySady(najdiVelikost(p, i.velikost));
+    return kusy.length ? Array.isArray(i.sadaBarvy) && i.sadaBarvy.length === kusy.length : !i.sadaBarvy;
+  }
+
   function nactiKosik() {
     try {
       const data = JSON.parse(localStorage.getItem(KLIC_KOSIKU) || "[]");
       if (!Array.isArray(data)) return [];
-      const platne = data.filter((i) => i && najdiProdukt(i.id) && platnaVelikost(najdiProdukt(i.id), i.velikost));
+      const platne = data.filter((i) => i && najdiProdukt(i.id) && platnaVelikost(najdiProdukt(i.id), i.velikost) && platnaSada(najdiProdukt(i.id), i));
       // Barvu uloženou dřív jinými písmeny („vínová“) přepíše na název ze seznamu BARVY („Vínová“).
       platne.forEach((i) => {
         if (i.barva && najdiBarvu(i.barva)) i.barva = najdiBarvu(i.barva).nazev;
@@ -174,7 +225,7 @@
   function orizniKosik() {
     let zmena = false;
     kosik = kosik.filter((pol) => {
-      const max = lzePridat(najdiProdukt(pol.id), pol.barva, pol);
+      const max = lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol);
       if (pol.pocet <= max) return true;
       zmena = true;
       pol.pocet = max;
@@ -193,7 +244,7 @@
   }
 
   function klicPolozky(i) {
-    return `${i.id}|${i.velikost || ""}|${i.barva || ""}|${(i.poznamka || "").trim()}`;
+    return `${i.id}|${i.velikost || ""}|${i.barva || ""}|${(i.sadaBarvy || []).join(",")}|${(i.poznamka || "").trim()}`;
   }
 
   function pridejDoKosiku(polozka) {
@@ -494,26 +545,48 @@
     </div>`;
   }
 
+  /** Kolečko s barvou; vyprodaná barva je přeškrtnutá. „data“ určuje, jestli jde o barvu výrobku, nebo kusu sady. */
+  function swatchHtml(p, b, vybrana, data) {
+    const nic = skladem(p, b.nazev) === 0;
+    const popis = nic ? `${b.nazev} – vyprodáno` : b.nazev;
+    return `<button type="button" class="swatch${nic ? " swatch-vyprodano" : ""}" ${data} aria-pressed="${vybrana}" aria-label="${esc(popis)}" title="${esc(popis)}" style="background:${esc(b.hex)}"></button>`;
+  }
+
+  /** Volba barvy pro každý kus sady – každý kus má vlastní řádek s kolečky. */
+  function vyberSadyHtml(p, kusy, sadaBarvy) {
+    return `<p class="swatches-label">Barvy v sadě</p>
+      ${kusy
+        .map(
+          (kus, n) => `<div class="sada-radek" role="group" aria-label="Barva: ${esc(kus)}">
+            <span class="sada-kus">${esc(kus)}</span>
+            <div class="swatches">${barvyProduktu(p)
+              .map((b) => swatchHtml(p, b, b.nazev === sadaBarvy[n], `data-kus="${n}" data-barva-kusu="${esc(b.nazev)}"`))
+              .join("")}</div>
+            <strong class="sada-barva">${esc(sadaBarvy[n])}</strong>
+          </div>`,
+        )
+        .join("")}`;
+  }
+
   function detail(id) {
     const p = najdiProdukt(id);
     if (!p) return nenalezeno();
     const barvy = barvyProduktu(p);
-    // Vyprodaná barva je přeškrtnutá; předem se vybere první barva, která je skladem.
+    // Předem se vybere první barva, která je skladem.
     const vychozi = barvy.find((b) => skladem(p, b.nazev) > 0) || barvy[0];
     const vyberBarvy = barvy.length
-      ? `<p class="swatches-label">Barva: <strong id="nazev-barvy">${esc(vychozi.nazev)}</strong></p>
-         <div class="swatches" role="group" aria-label="Barva">${barvy
-           .map((b) => {
-             const nic = skladem(p, b.nazev) === 0;
-             const popis = nic ? `${b.nazev} – vyprodáno` : b.nazev;
-             return `<button type="button" class="swatch${nic ? " swatch-vyprodano" : ""}" data-barva="${esc(b.nazev)}" aria-pressed="${b === vychozi}" aria-label="${esc(popis)}" title="${esc(popis)}" style="background:${esc(b.hex)}"></button>`;
-           })
-           .join("")}</div>`
+      ? `<div id="vyber-barvy">
+           <p class="swatches-label">Barva: <strong id="nazev-barvy">${esc(vychozi.nazev)}</strong></p>
+           <div class="swatches" role="group" aria-label="Barva">${barvy
+             .map((b) => swatchHtml(p, b, b === vychozi, `data-barva="${esc(b.nazev)}"`))
+             .join("")}</div>
+         </div>
+         <div id="vyber-sady" hidden></div>`
       : "";
     const velikosti = velikostiProduktu(p);
     const vyberVelikosti = velikosti.length > 1
-      ? `<p class="swatches-label">Velikost</p>
-         <div class="sizes" role="group" aria-label="Velikost">${velikosti
+      ? `<p class="swatches-label">${popisekVelikosti(p)}</p>
+         <div class="sizes" role="group" aria-label="${popisekVelikosti(p)}">${velikosti
            .map((v, n) => `<button type="button" class="size" data-velikost="${esc(v.nazev)}" aria-pressed="${n === 0}"><span>${esc(v.nazev)}</span><small>${kc.format(Number(v.cena) || 0)}</small></button>`)
            .join("")}</div>`
       : "";
@@ -581,6 +654,7 @@
       true,
     );
     let velikost = velikostiProduktu(p)[0]?.nazev;
+    let sadaBarvy = null; // u sady barva každého kusu, jinak null
     let pocet = 1;
     const vystupPoctu = document.getElementById("pocet");
     const tlacitko = document.getElementById("pridat");
@@ -588,25 +662,62 @@
 
     // Počet kusů nepustí nad zásobu skladem (počítají se i kusy, které už jsou v košíku).
     function obnovPocet() {
-      const max = lzePridat(p, barva);
-      const malo = pocet > max && skladem(p, barva) < Infinity;
+      const vybrane = sadaBarvy || barva;
+      const zasoba = Math.min(...[].concat(vybrane).map((b) => skladem(p, b)));
+      const max = lzePridat(p, vybrane);
+      const malo = pocet > max && zasoba < Infinity;
       pocet = Math.max(1, Math.min(max, pocet));
       vystupPoctu.textContent = max ? pocet : 0;
       tlacitko.disabled = max === 0;
-      if (max === 0) info.textContent = skladem(p, barva) === 0 ? "Momentálně vyprodáno." : "Všechny kusy, které máme skladem, už máte v košíku.";
+      if (max === 0 && zasoba === 0) info.textContent = "Momentálně vyprodáno.";
+      else if (max === 0 && sadaBarvy) info.textContent = "V téhle kombinaci barev teď tolik kusů skladem nemáme. Zkuste prosím jinou.";
+      else if (max === 0) info.textContent = "Všechny kusy, které máme skladem, už máte v košíku.";
       else info.textContent = "Víc kusů teď skladem nemáme.";
       info.hidden = max > 0 && !malo;
     }
 
+    // Má-li výrobek fotky pro každou barvu (nebo variantu) zvlášť, ukážou se fotky té zvolené.
+    function obnovGalerii() {
+      if (p.obrazky && !Array.isArray(p.obrazky)) galerie.innerHTML = galerieHtml(p, fotkyProduktu(p, barva, velikost));
+    }
+
+    function vyberBarvu(nazev) {
+      barva = nazev;
+      document.getElementById("nazev-barvy").textContent = barva;
+      app.querySelectorAll("[data-barva]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.barva === barva)));
+    }
+
+    // Vykreslí volbu barev podle velikosti: u sady řádek pro každý kus, u varianty jen barvy, které má k dispozici.
+    function nastavBarvy() {
+      const kusy = kusySady(najdiVelikost(p, velikost));
+      const vyberSady = document.getElementById("vyber-sady");
+      if (!vyberSady) return;
+      const dostupne = barvyVelikosti(p, velikost);
+      if (!dostupne.some((b) => b.nazev === barva)) vyberBarvu((dostupne.find((b) => skladem(p, b.nazev) > 0) || dostupne[0]).nazev);
+      app.querySelectorAll("[data-barva]").forEach((b) => (b.hidden = !dostupne.some((d) => d.nazev === b.dataset.barva)));
+      sadaBarvy = kusy.length ? kusy.map(() => barva) : null;
+      document.getElementById("vyber-barvy").hidden = kusy.length > 0;
+      vyberSady.hidden = !kusy.length;
+      vyberSady.innerHTML = kusy.length ? vyberSadyHtml(p, kusy, sadaBarvy) : "";
+    }
+
+    document.getElementById("vyber-sady")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-barva-kusu]");
+      if (!btn) return;
+      const radek = btn.closest(".sada-radek");
+      sadaBarvy[Number(btn.dataset.kus)] = btn.dataset.barvaKusu;
+      radek.querySelector(".sada-barva").textContent = btn.dataset.barvaKusu;
+      radek.querySelectorAll("[data-barva-kusu]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      // Galerie ukáže barvu, na kterou zákazník právě klikl.
+      vyberBarvu(btn.dataset.barvaKusu);
+      obnovGalerii();
+      obnovPocet();
+    });
+
     app.querySelectorAll("[data-barva]").forEach((btn) =>
       btn.addEventListener("click", () => {
-        barva = btn.dataset.barva;
-        document.getElementById("nazev-barvy").textContent = barva;
-        app.querySelectorAll("[data-barva]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-        // Má-li výrobek fotky pro každou barvu zvlášť, ukážou se fotky zvolené barvy.
-        if (p.obrazky && !Array.isArray(p.obrazky)) {
-          galerie.innerHTML = galerieHtml(p, fotkyProduktu(p, barva));
-        }
+        vyberBarvu(btn.dataset.barva);
+        obnovGalerii();
         obnovPocet();
       }),
     );
@@ -615,6 +726,9 @@
         velikost = btn.dataset.velikost;
         app.querySelectorAll("[data-velikost]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
         if (!vyprodano(p)) document.getElementById("cena").textContent = kc.format(cenaProduktu(p, velikost));
+        nastavBarvy();
+        obnovGalerii();
+        obnovPocet();
       }),
     );
     app.querySelectorAll("[data-zmena]").forEach((btn) =>
@@ -624,13 +738,16 @@
       }),
     );
     tlacitko.addEventListener("click", () => {
-      if (!lzePridat(p, barva)) return obnovPocet();
-      pridejDoKosiku({ id: p.id, velikost, barva, pocet, poznamka: "" });
-      const upresneni = [velikost, barva].filter(Boolean).join(", ");
+      if (!lzePridat(p, sadaBarvy || barva)) return obnovPocet();
+      const polozka = { id: p.id, velikost, barva: sadaBarvy ? null : barva, pocet, poznamka: "" };
+      if (sadaBarvy) polozka.sadaBarvy = [...sadaBarvy];
+      pridejDoKosiku(polozka);
+      const upresneni = [velikost, polozka.barva, ...popisSady(p, polozka).map((c) => c.text)].filter(Boolean).join(", ");
       toast(`Přidáno do košíku: ${esc(p.nazev)}${upresneni ? ` (${esc(upresneni)})` : ""} × ${pocet} <a href="#kosik">Zobrazit košík →</a>`);
       pocet = 1;
       obnovPocet();
     });
+    nastavBarvy();
     obnovPocet();
   }
 
@@ -714,17 +831,18 @@
         const p = najdiProdukt(pol.id);
         const b = najdiBarvu(pol.barva);
         return `<li class="card cart-item">
-          <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(fotkyProduktu(p, pol.barva)[0], p.nazev, PRODUKTY.indexOf(p))}</a>
+          <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(fotkyProduktu(p, barvyPolozky(pol)[0], pol.velikost)[0], p.nazev, PRODUKTY.indexOf(p))}</a>
           <div class="cart-item-body">
             <div class="cart-item-top"><a href="#produkt/${encodeURIComponent(p.id)}">${esc(p.nazev)}</a><span>${kc.format(cenaProduktu(p, pol.velikost) * pol.pocet)}</span></div>
-            ${pol.velikost ? `<div class="cart-item-meta">Velikost: ${esc(pol.velikost)}</div>` : ""}
+            ${pol.velikost ? `<div class="cart-item-meta">${popisekVelikosti(p)}: ${esc(pol.velikost)}</div>` : ""}
             ${pol.barva ? `<div class="cart-item-meta"><i style="background:${esc(b ? b.hex : "#888")}"></i>${esc(pol.barva)}</div>` : ""}
+            ${popisSady(p, pol).map((c) => `<div class="cart-item-meta"><i style="background:${esc(najdiBarvu(c.barva)?.hex || "#888")}"></i>${esc(c.text)}</div>`).join("")}
             ${pol.poznamka ? `<div class="cart-item-note">„${esc(pol.poznamka)}“</div>` : ""}
             <div class="cart-item-actions">
               <div class="qty qty-small">
                 <button type="button" data-polozka="${n}" data-zmena="-1" aria-label="Méně">−</button>
                 <output>${pol.pocet}</output>
-                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více" ${pol.pocet >= lzePridat(p, pol.barva, pol) ? 'disabled title="Víc kusů skladem nemáme"' : ""}>+</button>
+                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více" ${pol.pocet >= lzePridat(p, barvyPolozky(pol), pol) ? 'disabled title="Víc kusů skladem nemáme"' : ""}>+</button>
               </div>
               <button type="button" class="remove" data-odebrat="${n}">Odebrat</button>
             </div>
@@ -764,7 +882,8 @@
     const radky = kosik.map((pol, n) => {
       const p = najdiProdukt(pol.id);
       const cena = cenaProduktu(p, pol.velikost);
-      let r = `${n + 1}) ${p.nazev}${pol.velikost ? ` – velikost: ${pol.velikost}` : ""}${pol.barva ? ` – barva: ${pol.barva}` : ""} – ${pol.pocet} ks × ${kc.format(cena)} = ${kc.format(cena * pol.pocet)}`;
+      const sada = popisSady(p, pol).map((c) => c.text).join(", ");
+      let r = `${n + 1}) ${p.nazev}${pol.velikost ? ` – ${popisekVelikosti(p).toLowerCase()}: ${pol.velikost}` : ""}${pol.barva ? ` – barva: ${pol.barva}` : ""}${sada ? ` – barvy: ${sada}` : ""} – ${pol.pocet} ks × ${kc.format(cena)} = ${kc.format(cena * pol.pocet)}`;
       if (pol.poznamka) r += `\n   Poznámka: ${pol.poznamka}`;
       return r;
     });
@@ -826,7 +945,7 @@ Děkuji`;
         if (kosik.length === 0) return zobraz();
       } else if (btn.dataset.zmena) {
         const pol = kosik[Number(btn.dataset.polozka)];
-        pol.pocet = Math.max(1, Math.min(lzePridat(najdiProdukt(pol.id), pol.barva, pol), pol.pocet + Number(btn.dataset.zmena)));
+        pol.pocet = Math.max(1, Math.min(lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol), pol.pocet + Number(btn.dataset.zmena)));
         ulozKosik();
       }
       vykresliPolozky();

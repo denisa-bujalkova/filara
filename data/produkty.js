@@ -17,6 +17,14 @@
   - Velikosti s vlastní cenou: místo řádku cena napište
       velikosti: [ { nazev: "S", cena: 290 }, { nazev: "M", cena: 390 } ],
     Zákazník si velikost vybere, v nabídce se ukáže „od 290 Kč“.
+  - Sada, ve které si zákazník volí barvu každého kusu: k velikosti přidejte sada:
+      { nazev: "Sada 3 ks (S, M, L)", cena: 80, sada: ["S", "M", "L"] },   = barva pro každou velikost
+      { nazev: "Sada 3 ks S", cena: 210, sada: 3 },                        = barva pro 1., 2. a 3. kus
+    Skladem: číslo (skladem: 3) počítá sadu jako 1 kus, počet podle barev ubere z každé barvy kusy v sadě.
+  - Varianty (např. různé tvary vločky): místo velikostí napište varianty, fungují stejně.
+      varianty: [ { nazev: "Varianta 1", cena: 90 }, { nazev: "Varianta 5", cena: 40, barvy: ["Bílá"] } ],
+    barvy: ["Bílá"] u varianty = v té variantě jde vybrat jen tato barva.
+    Fotky: obrazky: { "Bílá, Varianta 1": ["obrazky/a.jpg"], "Bílá, Varianta 5": ["obrazky/b.jpg"] },
   - Delší popis pište mezi zpětné uvozovky ` ... ` (pravý Alt + 7), pak může mít víc řádků:
     prázdný řádek = nový odstavec, řádek začínající "- " = odrážka (text před dvojtečkou bude tučně),
     samostatný řádek končící dvojtečkou = mezititulek. Uvnitř popisu nepoužívejte znak `.
@@ -70,7 +78,7 @@ const BARVY = [
   { nazev: "Fialová", hex: "#7C3AED" },
   { nazev: "Růžová", hex: "#EC4899" },
   { nazev: "Béžová", hex: "#E8D9B5" },
-  { nazev: "Vínová", hex: "#722F37" },
+  { nazev: "Vínová", hex: "#93303A" },
   { nazev: "Tmavě hnědá", hex: "#5A2D00" },
   { nazev: "Světle hnědá", hex: "#CAA580" },
   { nazev: "Zlatá", hex: "#D4AF37" },
@@ -80,6 +88,7 @@ const BARVY = [
   { nazev: "Červenozlatá", hex: "linear-gradient(135deg, #DC2626, #D4AF37)" },
   { nazev: "Modrozelená", hex: "linear-gradient(135deg, #3B82F6, #84CC16)" },
   { nazev: "Oranžovošedivá", hex: "linear-gradient(135deg, #F97316, #A8A29E)" },
+  { nazev: "Zelená se třpytkami", hex: "radial-gradient(circle at 30% 30%, #E8F5EF 0 1px, transparent 1.5px), radial-gradient(circle at 68% 42%, #E8F5EF 0 1px, transparent 1.5px), radial-gradient(circle at 42% 72%, #E8F5EF 0 1px, transparent 1.5px), #2F5052" },
 ];
 
 const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Klíčenky"];
@@ -392,15 +401,28 @@ const PRODUKTY = [
     id: "snehova-vlocka",
     nazev: "Sněhová vločka",
     kategorie: "Vánoce",
-    velikosti: [
-      { nazev: "Malá", cena: 40 },
-      { nazev: "Velká", cena: 90 },
+    varianty: [
+      { nazev: "Varianta 1", cena: 90 },
+      { nazev: "Varianta 2", cena: 90 },
+      { nazev: "Varianta 3", cena: 90 },
+      { nazev: "Varianta 4", cena: 90 },
+      { nazev: "Varianta 5", cena: 40, barvy: ["Bílá"] },   // malá, jen v bílé
     ],
     material: "PLA",
     pece: "zavesne",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    barvy: ["Bílá", "Zlatá"],
+    obrazky: {
+      "Bílá, Varianta 1": ["obrazky/vlocka-bila-1.jpg"],
+      "Bílá, Varianta 2": ["obrazky/vlocka-bila-2.jpg"],
+      "Bílá, Varianta 3": ["obrazky/vlocka-bila-3.jpg"],
+      "Bílá, Varianta 4": ["obrazky/vlocka-bila-4.jpg"],
+      "Bílá, Varianta 5": ["obrazky/vlocka-bila-5-1.jpg", "obrazky/vlocka-bila-5-2.jpg"],
+      "Zlatá, Varianta 1": ["obrazky/vlocka-zlata-1.jpg"],
+      "Zlatá, Varianta 2": ["obrazky/vlocka-zlata-2.jpg"],
+      "Zlatá, Varianta 3": ["obrazky/vlocka-zlata-3.jpg"],
+      "Zlatá, Varianta 4": ["obrazky/vlocka-zlata-4.jpg"],
+    },
   },
   {
     id: "leguan",
@@ -602,7 +624,7 @@ const PRODUKTY = [
   },
   {
     id: "stromek-s-hvezdou",
-    nazev: "Realistický stromek s hvězdou",
+    nazev: "Stromek s hvězdou",
     kategorie: "Vánoce",
     velikosti: [
       { nazev: "Malý", cena: 80 },
@@ -611,7 +633,7 @@ const PRODUKTY = [
     material: "PLA",
     popis: "",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/stromek-s-hvezdou-1.jpg", "obrazky/stromek-s-hvezdou-2.jpg"],
   },
   {
     id: "louskacek",
@@ -623,8 +645,12 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["Vínová", "Zelená"],
-    obrazky: [],
+    barvy: ["Vínová", "Zelená se třpytkami", "Červená"],
+    obrazky: {
+      "Vínová": ["obrazky/louskacek-vinova.jpg"],
+      "Zelená se třpytkami": ["obrazky/louskacek-zelena.jpg"],
+      "Červená": ["obrazky/louskacek-cervena.jpg"],
+    },
   },
   {
     id: "snehulak",
@@ -633,8 +659,12 @@ const PRODUKTY = [
     cena: 190,
     material: "PLA",
     popis: "",
-    barvy: ["Béžová", "Červená", "Černá"],
-    obrazky: [],
+    barvy: ["Béžová", "Červená", "Zelená se třpytkami"],
+    obrazky: {
+      "Béžová": ["obrazky/snehulak-bezova-1.jpg", "obrazky/snehulak-bezova-2.jpg"],
+      "Červená": ["obrazky/snehulak-cervena-1.jpg", "obrazky/snehulak-cervena-2.jpg"],
+      "Zelená se třpytkami": ["obrazky/snehulak-zelena-1.jpg", "obrazky/snehulak-zelena-2.jpg"],
+    },
   },
   {
     id: "ozdoba-spicka",
@@ -644,14 +674,20 @@ const PRODUKTY = [
       { nazev: "S", cena: 80 },
       { nazev: "M", cena: 190 },
       { nazev: "L", cena: 250 },
-      { nazev: "Sada 3 ks S", cena: 210 },
-      { nazev: "Sada 6 ks S", cena: 390 },
+      { nazev: "Sada 3 ks S", cena: 210, sada: 3 },
+      { nazev: "Sada 6 ks S", cena: 390, sada: 6 },
     ],
     material: "PLA",
     pece: "zavesne",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    barvy: ["Vínová", "Béžová", "Bílá", "Tmavě hnědá", "Zelená se třpytkami"],
+    obrazky: {
+      "Vínová": ["obrazky/ozdoba-spicka-vinova-1.jpg", "obrazky/ozdoba-spicka-vinova-2.jpg", "obrazky/ozdoba-spicka-vinova-3.jpg"],
+      "Béžová": ["obrazky/ozdoba-spicka-bezova-1.jpg"],
+      "Bílá": ["obrazky/ozdoba-spicka-bila-1.jpg"],
+      "Tmavě hnědá": ["obrazky/ozdoba-spicka-tmave-hneda-1.jpg"],
+      "Zelená se třpytkami": ["obrazky/ozdoba-spicka-zelena-1.jpg"],
+    },
   },
   {
     id: "hvezda",
@@ -661,13 +697,18 @@ const PRODUKTY = [
       { nazev: "S", cena: 20 },
       { nazev: "M", cena: 30 },
       { nazev: "L", cena: 50 },
-      { nazev: "Sada 3 ks (S, M, L)", cena: 80 },
+      { nazev: "Sada 3 ks (S, M, L)", cena: 80, sada: ["S", "M", "L"] },
     ],
     material: "PLA",
     pece: "zavesne",
     popis: "",
-    barvy: ["Bílá", "Zelená", "Červená", "Zlatá"],
-    obrazky: [],
+    barvy: ["Bílá", "Zelená se třpytkami", "Červená", "Zlatá"],
+    obrazky: {
+      "Bílá": ["obrazky/hvezda-bila.jpg"],
+      "Zelená se třpytkami": ["obrazky/hvezda-zelena.jpg"],
+      "Červená": ["obrazky/hvezda-cervena.jpg"],
+      "Zlatá": ["obrazky/hvezda-zlata.jpg"],
+    },
   },
   {
     id: "dyne-maslova",
@@ -926,5 +967,16 @@ const PRODUKTY = [
     popis: "",
     barvy: [],
     obrazky: [],
+  },
+  {
+    id: "ozdoba-koule",
+    nazev: "Ozdoba koule",
+    kategorie: "Vánoce",
+    cena: 0,
+    material: "PLA",
+    pece: "zavesne",
+    popis: "",
+    barvy: ["Vínová"],
+    obrazky: ["obrazky/ozdoba-koule-vinova-1.jpg"],
   },
 */

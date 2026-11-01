@@ -1323,6 +1323,40 @@ textarea.input {
   transform: translateY(-50%) rotate(-45deg);
 }
 
+/* Výběr barev v sadě – jeden řádek pro každý kus */
+.sada-radek {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 12px;
+}
+
+.sada-radek:last-child {
+  margin-bottom: 20px;
+}
+
+.sada-kus {
+  min-width: 44px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sada-radek .swatches {
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.sada-radek .swatch {
+  width: 30px;
+  height: 30px;
+}
+
+.sada-barva {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 /* Výběr velikosti – tlačítka s názvem a cenou */
 .sizes {
   display: flex;
