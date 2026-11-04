@@ -1102,7 +1102,9 @@ textarea.input {
 
 /* Fotky výrobku: na mobilu přes celou šířku, na počítači o čtvrtinu užší než sloupec a na střed.
    Přepínají se šipkami nebo posunutím prstem. */
+/* Pevná šířka: než se načte fotka nové barvy, galerie se nesmí smrsknout, jinak by stránka poskočila. */
 #galerie {
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -1337,12 +1339,14 @@ textarea.input {
 }
 
 .sada-kus {
-  min-width: 44px;
   font-size: 14px;
   font-weight: 600;
 }
 
+/* Kolečka mají vlastní řádek, aby se výška neměnila podle délky názvu barvy. */
 .sada-radek .swatches {
+  flex-basis: 100%;
+  order: 1;
   gap: 8px;
   margin-bottom: 0;
 }

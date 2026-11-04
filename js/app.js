@@ -79,10 +79,22 @@
     return velikostiProduktu(p).find((v) => v.nazev === velikost);
   }
 
-  /** Kusy v sadě, u kterých si zákazník volí barvu: sada: ["S", "M", "L"] (podle velikostí), sada: 3 (1. kus, 2. kus, 3. kus). */
-  function kusySady(v) {
-    if (!v || !v.sada) return [];
-    return Array.isArray(v.sada) ? v.sada : Array.from({ length: Number(v.sada) || 0 }, (_, n) => `${n + 1}. kus`);
+  /** Sada je u velikosti, nebo u celého výrobku (výrobek s jednou cenou a víc díly). */
+  function sadaVyrobku(p, velikost) {
+    return najdiVelikost(p, velikost)?.sada || p.sada;
+  }
+
+  /** Kusy v sadě, u kterých si zákazník volí barvu: sada: ["S", "M", "L"] (podle velikostí), sada: 3 (1. kus, 2. kus, 3. kus).
+      Kus může mít vlastní barvy: { nazev: "Miska", barvy: ["Bílá", "Černá"] }. */
+  function kusySady(p, velikost) {
+    const sada = sadaVyrobku(p, velikost);
+    if (!sada) return [];
+    if (Array.isArray(sada)) return sada.map((k) => (typeof k === "string" ? { nazev: k } : k));
+    return Array.from({ length: Number(sada) || 0 }, (_, n) => ({ nazev: `${n + 1}. kus` }));
+  }
+
+  function barvyKusu(p, kus) {
+    return kus.barvy ? kus.barvy.map(najdiBarvu).filter(Boolean) : barvyProduktu(p);
   }
 
   /** Barvy, které jdou zvolit: u varianty s vlastním seznamem (barvy: ["Bílá"]) jen ty, jinak všechny barvy výrobku. */
@@ -99,9 +111,9 @@
 
   /** Barvy sady pro košík a e-mail: u sady podle velikostí „S: Bílá“, u kusů stejné velikosti „2× Vínová“. */
   function popisSady(p, pol) {
-    const v = najdiVelikost(p, pol.velikost);
-    if (!pol.sadaBarvy || !v) return [];
-    if (Array.isArray(v.sada)) return pol.sadaBarvy.map((barva, n) => ({ barva, text: `${v.sada[n]}: ${barva}` }));
+    const kusy = kusySady(p, pol.velikost);
+    if (!pol.sadaBarvy || !kusy.length) return [];
+    if (Array.isArray(sadaVyrobku(p, pol.velikost))) return pol.sadaBarvy.map((barva, n) => ({ barva, text: `${kusy[n].nazev}: ${barva}` }));
     return [...new Set(pol.sadaBarvy)].map((barva) => ({ barva, text: `${pol.sadaBarvy.filter((b) => b === barva).length}× ${barva}` }));
   }
 
@@ -200,7 +212,7 @@
 
   /** Počet barev v položce musí sedět s počtem kusů sady (sada se v produkty.js mohla změnit). */
   function platnaSada(p, i) {
-    const kusy = kusySady(najdiVelikost(p, i.velikost));
+    const kusy = kusySady(p, i.velikost);
     return kusy.length ? Array.isArray(i.sadaBarvy) && i.sadaBarvy.length === kusy.length : !i.sadaBarvy;
   }
 
@@ -557,9 +569,9 @@
     return `<p class="swatches-label">Barvy v sadě</p>
       ${kusy
         .map(
-          (kus, n) => `<div class="sada-radek" role="group" aria-label="Barva: ${esc(kus)}">
-            <span class="sada-kus">${esc(kus)}</span>
-            <div class="swatches">${barvyProduktu(p)
+          (kus, n) => `<div class="sada-radek" role="group" aria-label="Barva: ${esc(kus.nazev)}">
+            <span class="sada-kus">${esc(kus.nazev)}</span>
+            <div class="swatches">${barvyKusu(p, kus)
               .map((b) => swatchHtml(p, b, b.nazev === sadaBarvy[n], `data-kus="${n}" data-barva-kusu="${esc(b.nazev)}"`))
               .join("")}</div>
             <strong class="sada-barva">${esc(sadaBarvy[n])}</strong>
@@ -689,13 +701,19 @@
 
     // Vykreslí volbu barev podle velikosti: u sady řádek pro každý kus, u varianty jen barvy, které má k dispozici.
     function nastavBarvy() {
-      const kusy = kusySady(najdiVelikost(p, velikost));
+      const kusy = kusySady(p, velikost);
       const vyberSady = document.getElementById("vyber-sady");
       if (!vyberSady) return;
       const dostupne = barvyVelikosti(p, velikost);
       if (!dostupne.some((b) => b.nazev === barva)) vyberBarvu((dostupne.find((b) => skladem(p, b.nazev) > 0) || dostupne[0]).nazev);
       app.querySelectorAll("[data-barva]").forEach((b) => (b.hidden = !dostupne.some((d) => d.nazev === b.dataset.barva)));
-      sadaBarvy = kusy.length ? kusy.map(() => barva) : null;
+      // Každý kus začne ve zvolené barvě; kus s vlastními barvami v první, kterou má skladem.
+      sadaBarvy = kusy.length
+        ? kusy.map((kus) => {
+            const moznosti = barvyKusu(p, kus);
+            return moznosti.some((b) => b.nazev === barva) ? barva : (moznosti.find((b) => skladem(p, b.nazev) > 0) || moznosti[0]).nazev;
+          })
+        : null;
       document.getElementById("vyber-barvy").hidden = kusy.length > 0;
       vyberSady.hidden = !kusy.length;
       vyberSady.innerHTML = kusy.length ? vyberSadyHtml(p, kusy, sadaBarvy) : "";
@@ -708,9 +726,11 @@
       sadaBarvy[Number(btn.dataset.kus)] = btn.dataset.barvaKusu;
       radek.querySelector(".sada-barva").textContent = btn.dataset.barvaKusu;
       radek.querySelectorAll("[data-barva-kusu]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      // Galerie ukáže barvu, na kterou zákazník právě klikl.
-      vyberBarvu(btn.dataset.barvaKusu);
-      obnovGalerii();
+      // Galerie ukáže barvu, na kterou zákazník právě klikl (kus s vlastními barvami, např. miska, fotky nepřepíná).
+      if (!kusySady(p, velikost)[Number(btn.dataset.kus)].barvy) {
+        vyberBarvu(btn.dataset.barvaKusu);
+        obnovGalerii();
+      }
       obnovPocet();
     });
 

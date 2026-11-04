@@ -20,6 +20,8 @@
   - Sada, ve které si zákazník volí barvu každého kusu: k velikosti přidejte sada:
       { nazev: "Sada 3 ks (S, M, L)", cena: 80, sada: ["S", "M", "L"] },   = barva pro každou velikost
       { nazev: "Sada 3 ks S", cena: 210, sada: 3 },                        = barva pro 1., 2. a 3. kus
+    Výrobek s jednou cenou, kde se volí barva každého dílu: k výrobku přidejte (Miska má vlastní barvy a fotky nepřepíná)
+      sada: ["Podtácky", { nazev: "Miska", barvy: ["Bílá", "Černá"] }],
     Skladem: číslo (skladem: 3) počítá sadu jako 1 kus, počet podle barev ubere z každé barvy kusy v sadě.
   - Varianty (např. různé tvary vločky): místo velikostí napište varianty, fungují stejně.
       varianty: [ { nazev: "Varianta 1", cena: 90 }, { nazev: "Varianta 5", cena: 40, barvy: ["Bílá"] } ],
@@ -91,7 +93,7 @@ const BARVY = [
   { nazev: "Zelená se třpytkami", hex: "radial-gradient(circle at 30% 30%, #E8F5EF 0 1px, transparent 1.5px), radial-gradient(circle at 68% 42%, #E8F5EF 0 1px, transparent 1.5px), radial-gradient(circle at 42% 72%, #E8F5EF 0 1px, transparent 1.5px), #2F5052" },
 ];
 
-const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Klíčenky"];
+const KATEGORIE = ["Zvířata", "Dekorace", "Květiny", "Domácnost", "Vánoce", "Podzim", "Halloween", "Klíčenky", "Fidgety"];
 
 // Fotky, které se střídají v kruhu na úvodní stránce (nejlépe čtvercové, výrobek uprostřed).
 // Když seznam necháte prázdný [], ukáže se místo nich obrázek tiskárny.
@@ -247,8 +249,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
-    barvy: ["Béžová", "Vínová"],
-    obrazky: [],
+    autor: "",
+    barvy: ["Oranžová", "Vínová", "Černá", "Béžová"],
+    obrazky: {
+      "Oranžová": ["obrazky/liska-oranzova-1.jpg", "obrazky/liska-oranzova-2.jpg", "obrazky/liska-oranzova-3.jpg"],
+      "Vínová": ["obrazky/liska-vinova-1.jpg", "obrazky/liska-vinova-2.jpg", "obrazky/liska-vinova-3.jpg"],
+      "Černá": ["obrazky/liska-cerna-1.jpg", "obrazky/liska-cerna-2.jpg", "obrazky/liska-cerna-3.jpg"],
+    },
   },
   {
     id: "hrib",
@@ -261,8 +268,12 @@ const PRODUKTY = [
     material: "PLA",
     pece: "led",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Světle hnědá", "Tmavě hnědá"],
-    obrazky: ["obrazky/hrib-1.jpg"],
+    obrazky: {
+      "Světle hnědá": ["obrazky/hrib-svetle-hneda-1.jpg", "obrazky/hrib-svetle-hneda-2.jpg", "obrazky/hrib-svetle-hneda-3.jpg"],
+      "Tmavě hnědá": ["obrazky/hrib-tmave-hneda-1.jpg", "obrazky/hrib-tmave-hneda-2.jpg", "obrazky/hrib-tmave-hneda-3.jpg"],
+    },
   },
   {
     id: "zalud",
@@ -272,8 +283,9 @@ const PRODUKTY = [
     material: "PLA",
     pece: "led",
     popis: "",
+    autor: "Sabre Design",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/zalud-1.jpg", "obrazky/zalud-2.jpg", "obrazky/zalud-3.jpg"],
   },
   {
     id: "dyne",
@@ -286,8 +298,13 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: ["Žlutá", "Oranžová"],
-    obrazky: [],
+    autor: "Sabre Design",
+    barvy: ["Žlutá", "Oranžová", "Zelená"],
+    obrazky: {
+      "Žlutá": ["obrazky/dyne-zluta-1.jpg", "obrazky/dyne-zluta-2.jpg", "obrazky/dyne-zluta-3.jpg", "obrazky/dyne-zluta-4.jpg"],
+      "Oranžová": ["obrazky/dyne-oranzova-1.jpg", "obrazky/dyne-oranzova-2.jpg"],
+      "Zelená": ["obrazky/dyne-zelena-1.jpg", "obrazky/dyne-zelena-2.jpg"],
+    },
   },
   {
     id: "svicen",
@@ -297,8 +314,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "led",
     popis: "",
+    autor: "KOGI3D",
     barvy: ["Béžová", "Oranžová", "Zelená"],
-    obrazky: [],
+    obrazky: {
+      "Béžová": ["obrazky/svicen-dyne-bezova-1.jpg", "obrazky/svicen-dyne-bezova-2.jpg", "obrazky/svicen-dyne-bezova-3.jpg"],
+      "Oranžová": ["obrazky/svicen-dyne-oranzova-1.jpg", "obrazky/svicen-dyne-oranzova-2.jpg", "obrazky/svicen-dyne-oranzova-3.jpg"],
+      "Zelená": ["obrazky/svicen-dyne-zelena-1.jpg", "obrazky/svicen-dyne-zelena-2.jpg", "obrazky/svicen-dyne-zelena-3.jpg"],
+    },
   },
   {
     id: "vaza",
@@ -311,8 +333,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "vaza",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    autor: "Sabre Design",
+    barvy: ["Béžová", "Tmavě hnědá", "Vínová"],
+    obrazky: {
+      "Béžová": ["obrazky/vaza-vroubkovana-bezova-1.jpg", "obrazky/vaza-vroubkovana-bezova-2.jpg"],
+      "Tmavě hnědá": ["obrazky/vaza-vroubkovana-tmave-hneda-1.jpg", "obrazky/vaza-vroubkovana-tmave-hneda-2.jpg"],
+      "Vínová": ["obrazky/vaza-vroubkovana-vinova-1.jpg", "obrazky/vaza-vroubkovana-vinova-2.jpg"],
+    },
   },
   {
     id: "miska-na-pistacie",
@@ -322,6 +349,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "miska",
     popis: "",
+    autor: "",
     barvy: [],
     obrazky: [],
   },
@@ -333,8 +361,16 @@ const PRODUKTY = [
     material: "PLA",
     pece: "podtacky",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    autor: "",
+    sada: ["Podtácky", { nazev: "Miska", barvy: ["Bílá", "Černá"] }],   // zákazník volí barvu podtácků i misky
+    barvy: ["Béžová", "Bílá", "Růžová", "Šedá", "Zelená"],
+    obrazky: {
+      "Béžová": ["obrazky/podtacky-bezova-1.jpg", "obrazky/podtacky-bezova-2.jpg"],
+      "Bílá": ["obrazky/podtacky-bila-1.jpg", "obrazky/podtacky-bila-2.jpg"],
+      "Růžová": ["obrazky/podtacky-ruzova-1.jpg", "obrazky/podtacky-ruzova-2.jpg"],
+      "Šedá": ["obrazky/podtacky-seda-1.jpg", "obrazky/podtacky-seda-2.jpg"],
+      "Zelená": ["obrazky/podtacky-zelena-1.jpg", "obrazky/podtacky-zelena-2.jpg"],
+    },
   },
   {
     id: "chameleon",
@@ -351,6 +387,7 @@ const PRODUKTY = [
 
       - Detailní zpracování: Precizní 3D tisk s důrazem na plynulý pohyb kloubů.
     `,
+    autor: "KOGI3D",
     barvy: [],
     obrazky: [],
   },
@@ -362,6 +399,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: [],
     obrazky: [],
   },
@@ -375,8 +413,12 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    autor: "",
+    barvy: ["Bílá", "Fosforeskující"],
+    obrazky: {
+      "Bílá": ["obrazky/duch-bila-1.jpg", "obrazky/duch-bila-2.jpg", "obrazky/duch-bila-3.jpg"],
+      "Fosforeskující": ["obrazky/duch-fosforeskujici-1.jpg", "obrazky/duch-fosforeskujici-2.jpg", "obrazky/duch-fosforeskujici-3.jpg"],
+    },
   },
   {
     id: "drak",
@@ -389,6 +431,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: ["Zelenomodrá", "Modrofialová", "Červená", "Fosforeskující"],
     obrazky: {
       "Zelenomodrá": ["obrazky/drak-zelenomodra.jpg"],
@@ -411,6 +454,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "zavesne",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Bílá", "Zlatá"],
     obrazky: {
       "Bílá, Varianta 1": ["obrazky/vlocka-bila-1.jpg"],
@@ -435,6 +479,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: [],
     obrazky: [],
   },
@@ -590,6 +635,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: [],
     obrazky: [],
   },
@@ -605,6 +651,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: ["Červenozlatá"],
     obrazky: ["obrazky/draci-vejce-1.jpg", "obrazky/draci-vejce-2.jpg"],
   },
@@ -616,6 +663,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "ohebne",
     popis: "",
+    autor: "KOGI3D",
     barvy: ["Modrá", "Zelená"],
     obrazky: {
       "Modrá": ["obrazky/had-kogi-modra-1.jpg", "obrazky/had-kogi-modra-2.jpg"],
@@ -632,6 +680,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
+    autor: "Nowcraft 3D",
     barvy: [],
     obrazky: ["obrazky/stromek-s-hvezdou-1.jpg", "obrazky/stromek-s-hvezdou-2.jpg"],
   },
@@ -645,6 +694,7 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Vínová", "Zelená se třpytkami", "Červená"],
     obrazky: {
       "Vínová": ["obrazky/louskacek-vinova.jpg"],
@@ -659,6 +709,7 @@ const PRODUKTY = [
     cena: 190,
     material: "PLA",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Béžová", "Červená", "Zelená se třpytkami"],
     obrazky: {
       "Béžová": ["obrazky/snehulak-bezova-1.jpg", "obrazky/snehulak-bezova-2.jpg"],
@@ -680,6 +731,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "zavesne",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Vínová", "Béžová", "Bílá", "Tmavě hnědá", "Zelená se třpytkami"],
     obrazky: {
       "Vínová": ["obrazky/ozdoba-spicka-vinova-1.jpg", "obrazky/ozdoba-spicka-vinova-2.jpg", "obrazky/ozdoba-spicka-vinova-3.jpg"],
@@ -702,6 +754,7 @@ const PRODUKTY = [
     material: "PLA",
     pece: "zavesne",
     popis: "",
+    autor: "",
     barvy: ["Bílá", "Zelená se třpytkami", "Červená", "Zlatá"],
     obrazky: {
       "Bílá": ["obrazky/hvezda-bila.jpg"],
@@ -721,8 +774,12 @@ const PRODUKTY = [
     ],
     material: "PLA",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Žlutá", "Béžová"],
-    obrazky: [],
+    obrazky: {
+      "Žlutá": ["obrazky/dyne-maslova-zluta-1.jpg", "obrazky/dyne-maslova-zluta-2.jpg", "obrazky/dyne-maslova-zluta-3.jpg"],
+      "Béžová": ["obrazky/dyne-maslova-bezova-1.jpg", "obrazky/dyne-maslova-bezova-2.jpg"],
+    },
   },
   {
     id: "vaza-strukturovana",
@@ -735,8 +792,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "vaza",
     popis: "",
+    autor: "Sabre Design",
     barvy: ["Béžová", "Zelená", "Vínová"],
-    obrazky: [],
+    obrazky: {
+      "Béžová": ["obrazky/vaza-hladka-bezova-1.jpg", "obrazky/vaza-hladka-bezova-2.jpg"],
+      "Zelená": ["obrazky/vaza-hladka-zelena-1.jpg", "obrazky/vaza-hladka-zelena-2.jpg"],
+      "Vínová": ["obrazky/vaza-hladka-vinova-1.jpg", "obrazky/vaza-hladka-vinova-2.jpg"],
+    },
   },
   {
     id: "houba-siskovec",
@@ -745,6 +807,7 @@ const PRODUKTY = [
     cena: 180,
     material: "PLA",
     popis: "",
+    autor: "",
     barvy: [],
     obrazky: [],
   },
@@ -755,8 +818,9 @@ const PRODUKTY = [
     cena: 50,
     material: "PLA",
     popis: "",
+    autor: "",
     barvy: [],
-    obrazky: [],
+    obrazky: ["obrazky/duch-s-dyni-1.jpg", "obrazky/duch-s-dyni-2.jpg"],
   },
   {
     id: "svicen-kvet",
@@ -766,8 +830,13 @@ const PRODUKTY = [
     material: "PLA",
     pece: "led",
     popis: "",
-    barvy: [],
-    obrazky: [],
+    autor: "",
+    barvy: ["Fialová", "Růžová", "Zelená"],
+    obrazky: {
+      "Fialová": ["obrazky/svicen-kvet-fialova-1.jpg", "obrazky/svicen-kvet-fialova-2.jpg", "obrazky/svicen-kvet-fialova-3.jpg"],
+      "Růžová": ["obrazky/svicen-kvet-ruzova-1.jpg", "obrazky/svicen-kvet-ruzova-2.jpg", "obrazky/svicen-kvet-ruzova-3.jpg"],
+      "Zelená": ["obrazky/svicen-kvet-zelena-1.jpg", "obrazky/svicen-kvet-zelena-2.jpg", "obrazky/svicen-kvet-zelena-3.jpg"],
+    },
   },
 ];
 
@@ -978,5 +1047,29 @@ const PRODUKTY = [
     popis: "",
     barvy: ["Vínová"],
     obrazky: ["obrazky/ozdoba-koule-vinova-1.jpg"],
+  },
+  {
+    id: "klicenka-dinosaurus",
+    nazev: "Dinosaurus",
+    kategorie: "Klíčenky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: ["Modrá", "Růžová", "Zelená"],
+    obrazky: {
+      "Modrá": ["obrazky/klicenka-dinosaur-modra-1.jpg"],
+      "Růžová": ["obrazky/klicenka-dinosaur-ruzova-1.jpg"],
+      "Zelená": ["obrazky/klicenka-dinosaur-zelena-1.jpg"],
+    },
+  },
+  {
+    id: "klicenka-duch",
+    nazev: "Duch",
+    kategorie: "Klíčenky",
+    cena: 0,
+    material: "PLA",
+    popis: "",
+    barvy: [],
+    obrazky: ["obrazky/klicenka-duch-1.jpg", "obrazky/klicenka-duch-2.jpg"],
   },
 */

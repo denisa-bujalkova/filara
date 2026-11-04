@@ -41,6 +41,10 @@ Sady s výběrem barev:
     { nazev: "Sada 3 ks (S, M, L)", cena: 80, sada: ["S", "M", "L"] },   (barva pro každou velikost)
     { nazev: "Sada 3 ks S", cena: 210, sada: 3 },                        (barva pro 1., 2. a 3. kus)
   Zvolené barvy jsou vidět v košíku i v e-mailu s objednávkou.
+  Výrobek s jednou cenou a víc díly (Podtácky + miska): přidejte sada přímo k výrobku.
+    sada: ["Podtácky", { nazev: "Miska", barvy: ["Bílá", "Černá"] }],
+  Díl s vlastním seznamem barev (Miska) nemění fotky. Ostatní díly berou barvy z barvy: [...] výrobku
+  a fotky se řídí podle nich.
   Skladem: číslo (skladem: 3) počítá jednu sadu jako 1 kus. Počet podle barev ubere z každé barvy
   tolik kusů, kolik jich je v sadě.
 
