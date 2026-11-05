@@ -52,8 +52,8 @@ const OBCHOD = {
   instagram: "_filara_print",
   // Údaje o provozovateli – ukazují se ve spodní liště a v obchodních podmínkách (texty jsou v podminky.js).
   // Dokud je tu [DOPLNIT …], zobrazí se na webu žlutě.
-  provozovatel: "[DOPLNIT: jméno a příjmení podnikatele]",
-  ico: "[DOPLNIT: IČO]",
+  provozovatel: "Klára Klaudy",
+  ico: "02215497",
 };
 
 // Způsoby dopravy nabízené v košíku. adresa: "vydejni-misto" | "dorucovaci" | "zadna"

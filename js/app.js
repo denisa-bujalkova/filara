@@ -1150,10 +1150,6 @@ Děkuji`;
     if (OBCHOD.instagram) el.innerHTML = odkazInstagram();
   });
   document.getElementById("info-odkazy").innerHTML = infoStranky.map((s) => `<a href="#${esc(s.adresa)}">${esc(s.nadpis)}</a>`).join("");
-  // Ve spodní liště: provozovatel a IČO (popisHtml by obalil text do <p>, proto jen zvýraznění [DOPLNIT …]).
-  const sDoplnit = (t) => esc(t).replace(/\[(DOPLNIT[^\]]*)\]/g, '<mark class="doplnit">$1</mark>');
-  if (OBCHOD.provozovatel) document.getElementById("provozovatel").innerHTML = ` · ${sDoplnit(OBCHOD.provozovatel)}${OBCHOD.ico ? `, IČO ${sDoplnit(OBCHOD.ico)}` : ""}`;
-  document.getElementById("year").textContent = new Date().getFullYear();
 
   // Klik na logo/název vždy vrátí na úvod – i když už na úvodu jsme (odroluje nahoru).
   document.querySelectorAll(".brand").forEach((a) =>
