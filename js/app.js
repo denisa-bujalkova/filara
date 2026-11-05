@@ -1061,7 +1061,7 @@ Děkuji`;
         <h1 class="chrome-text">Kontakt</h1>
         <div class="card kontakt">
           <div class="kontakt-udaje">
-            <div><strong>Filara 3D print</strong><br />${esc(OBCHOD.adresa)}</div>
+            <div><strong>Filara 3D print</strong><br />${esc(OBCHOD.adresa)}${OBCHOD.provozovatel ? `<br />Provozovatel: ${esc(OBCHOD.provozovatel)}${OBCHOD.ico ? `, IČO ${esc(OBCHOD.ico)}` : ""}` : ""}</div>
             <div><strong>Telefon</strong><br /><a href="${telefonOdkaz}">${esc(String(OBCHOD.telefon).replace(/^\+420\s*/, ""))}</a></div>
             <div><strong>E-mail</strong><br /><a href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a></div>
             ${OBCHOD.instagram ? `<div><strong>Instagram</strong><br />${odkazInstagram()}</div>` : ""}
