@@ -61,7 +61,8 @@ w(`-- =====================================================================
 -- Výrobky, barvy a kategorie jsou převedené z data/produkty.js (stav k 6. 11. 2026)
 -- automaticky skriptem supabase/scripts/generuj-seed.mjs, aby se při přepisu nic neztratilo.
 -- Soubor neupravujte ručně, změňte skript nebo produkty.js a vygenerujte ho znovu.
--- Pouští se jednou, po migraci 20261106120000_faze2_databaze.sql, na prázdnou databázi.
+-- Pouští se jednou, po všech migracích ze supabase/migrations/ (20261106120000_faze2_databaze.sql
+-- a 20261109120000_faze2a_upravy.sql), na prázdnou databázi.
 -- =====================================================================
 
 begin;
@@ -74,14 +75,16 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
--- Nastavení – VŠECHNY HODNOTY JSOU VYMYŠLENÉ, skutečné doplní Filip.
+-- Nastavení
 -- ---------------------------------------------------------------------
-insert into public.nastaveni (dny_na_zaplaceni, cena_zasilkovna, cislo_uctu, nazev_prijemce, text_vyroba) values (
-  7,                    -- VYMYŠLENÉ: počet dní na zaplacení (skutečný ještě neznáme)
-  99,                   -- VYMYŠLENÉ: cena Zásilkovny v Kč (skutečnou zadá Filip)
-  '123456789/0000',     -- VYMYŠLENÉ: číslo účtu (kód banky 0000 neexistuje)
+insert into public.nastaveni (pracovni_dny_na_zaplaceni, cena_zasilkovna, cislo_uctu, nazev_prijemce, text_vyroba, max_nezaplacenych, max_kusu_vyrobku) values (
+  3,                    -- rozhodnuto 9. 11. 2026: 3 pracovní dny (bez víkendů a svátků)
+  75,                   -- rozhodnuto 9. 11. 2026: Zásilkovna 75 Kč
+  '123456789/0000',     -- VYMYŠLENÉ: číslo účtu (kód banky 0000 neexistuje), skutečné doplní Filip
   'FILARA',
-  'Zvládneme vyrobit a doručit do 3 týdnů'
+  'Zvládneme vyrobit a doručit do 3 týdnů',
+  2,                    -- rozhodnuto 9. 11. 2026: max. 2 nezaplacené objednávky na e-mail nebo telefon
+  10                    -- rozhodnuto 9. 11. 2026: max. 10 ks jednoho výrobku v objednávce
 );
 `);
 
@@ -108,10 +111,12 @@ PRODUKTY.forEach((p, i) => {
   });
 
   w(`-- ${p.nazev} (${p.id})`);
-  w(`insert into public.produkty (id, nazev, popis, material, pece, autor, rozmery, doba_vyroby, doporuceny, rucne_malovano, cena, typ_moznosti, sada_stejne_kusy, rezim_zasob, vyprodano_rucne, vyprodano_poznamka, vyprodano_nabidnout_vyrobu, poradi) values (
+  w(`insert into public.produkty (id, nazev, popis, material, pece, autor, rozmery, doba_vyroby, doporuceny, rucne_malovano, cena, typ_moznosti, sada_stejne_kusy, rezim_zasob, vyprodano_rucne, vyprodano_nabidnout_vyrobu, poradi) values (
   ${q(p.id)}, ${q(p.nazev)}, ${q(dedent(p.popis))}, ${q(p.material || "PLA")}, ${pole(pece)}, ${q(p.autor)}, ${q(p.rozmery)}, ${q(p.dobaVyroby)},
   ${!!p.doporuceny}, ${!!p.rucneMalovano}, ${moz.length ? "null" : Number(p.cena)}, ${q(p.varianty ? "varianta" : "velikost")},
-  ${sadaVyrobku !== undefined && !Array.isArray(sadaVyrobku)}, ${q(rezim)}, ${!!rucne}, ${q(rucne?.poznamka)}, ${rucne ? rucne.nabidnout : true}, ${i + 1});`);
+  ${sadaVyrobku !== undefined && !Array.isArray(sadaVyrobku)}, ${q(rezim)}, ${!!rucne}, ${rucne ? rucne.nabidnout : true}, ${i + 1});`);
+  if (rucne?.poznamka)
+    w(`insert into public.vyprodano_poznamky (produkt_id, barva_id, poznamka) values (${q(p.id)}, null, ${q(rucne.poznamka)});`);
 
   const kat = [].concat(p.kategorie || []);
   if (kat.length)
@@ -120,7 +125,9 @@ PRODUKTY.forEach((p, i) => {
   // Barvy výrobku + barvy, které mají jen kusy sady (např. Černá u misky) – ty do produkt_barvy nepatří.
   barvy.forEach((b, j) => {
     const r = RUCNE_VYPRODANO_BARVA.find((x) => x.produkt === p.id && klic(x.barva) === klic(b));
-    w(`insert into public.produkt_barvy (produkt_id, barva_id, poradi, vyprodano_rucne, vyprodano_poznamka, vyprodano_nabidnout_vyrobu) values (${q(p.id)}, ${barva(b)}, ${j}, ${!!r}, ${q(r?.poznamka)}, ${r ? r.nabidnout : true});`);
+    w(`insert into public.produkt_barvy (produkt_id, barva_id, poradi, vyprodano_rucne, vyprodano_nabidnout_vyrobu) values (${q(p.id)}, ${barva(b)}, ${j}, ${!!r}, ${r ? r.nabidnout : true});`);
+    if (r?.poznamka)
+      w(`insert into public.vyprodano_poznamky (produkt_id, barva_id, poznamka) values (${q(p.id)}, ${barva(b)}, ${q(r.poznamka)});`);
   });
 
   moz.forEach((m, j) => {
