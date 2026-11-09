@@ -23,7 +23,7 @@ end $$;
 -- ---------------------------------------------------------------------
 insert into public.nastaveni (pracovni_dny_na_zaplaceni, cena_zasilkovna, cislo_uctu, nazev_prijemce, text_vyroba, max_nezaplacenych, max_kusu_vyrobku) values (
   3,                    -- rozhodnuto 9. 11. 2026: 3 pracovní dny (bez víkendů a svátků)
-  75,                   -- rozhodnuto 9. 11. 2026: Zásilkovna 75 Kč
+  99,                   -- rozhodnuto 9. 11. 2026: Zásilkovna 99 Kč (původně 75 Kč)
   '123456789/0000',     -- VYMYŠLENÉ: číslo účtu (kód banky 0000 neexistuje), skutečné doplní Filip
   'FILARA',
   'Zvládneme vyrobit a doručit do 3 týdnů',
