@@ -1,4 +1,6 @@
 /* Web bez serveru: stránky se přepínají podle části adresy za # (např. index.html#produkt/ohebny-drak).
+   Výrobky, barvy, kategorie a zásoby se načítají z databáze (js/katalog.js); údaje o obchodě, doprava, trhy
+   a texty „Materiál a péče“ jsou dál v data/produkty.js.
    Košík se ukládá v prohlížeči (localStorage) a objednávka se odesílá e-mailem přes zákazníkův e-mailový program. */
 (function () {
   "use strict";
@@ -7,9 +9,30 @@
   const kc = new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 });
   // Názvy barev se porovnávají bez ohledu na velká a malá písmena („vínová“ = „Vínová“).
   const klicBarvy = (nazev) => String(nazev ?? "").trim().toLocaleLowerCase("cs");
-  const barvaPodleNazvu = new Map(BARVY.map((b) => [klicBarvy(b.nazev), b]));
+  let barvaPodleNazvu = new Map();
   const najdiBarvu = (nazev) => barvaPodleNazvu.get(klicBarvy(nazev));
-  const MAX_KUSU = 99;
+  // Kolik kusů jednoho výrobku smí být v jedné objednávce – přepíše se hodnotou z nastavení v databázi.
+  let MAX_KUSU = 10;
+
+  // Katalog z data/produkty.js se nepoužije – výrobky, barvy a kategorie přijdou z databáze.
+  // stavKatalogu: "nacita" | "ok" | "chyba"
+  let stavKatalogu = "nacita";
+  PRODUKTY.length = 0;
+  BARVY.length = 0;
+  KATEGORIE.length = 0;
+
+  function prevezmiKatalog(k) {
+    PRODUKTY.push(...k.produkty);
+    BARVY.push(...k.barvy);
+    KATEGORIE.push(...k.kategorie);
+    barvaPodleNazvu = new Map(BARVY.map((b) => [klicBarvy(b.nazev), b]));
+    MAX_KUSU = Math.max(1, Math.floor(Number(k.nastaveni.max_kusu_vyrobku)) || 10);
+  }
+
+  /** „1 kus“, „2 kusy“, „5 kusů“ */
+  function kusy(n) {
+    return n === 1 ? "kus" : n >= 2 && n <= 4 ? "kusy" : "kusů";
+  }
 
   function esc(text) {
     return String(text ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -45,23 +68,44 @@
     return k ? [].concat(o[k]) : [];
   }
 
-  /** Sklad je v produkty.js buď jedno číslo (skladem: 3), nebo počet pro každou barvu (skladem: { "Bílá": 2 }). */
+  /** Zásoba je v databázi buď jeden počet za výrobek („celkem“), nebo počet pro každou barvu („po_barvach“). */
   function skladPodleBarev(p) {
-    return typeof p.skladem === "object" && p.skladem !== null;
+    return p.zasoba?.rezim === "po_barvach";
   }
 
-  /** Kolik kusů máme skladem. Infinity = řádek skladem u výrobku chybí, počet se nehlídá. */
+  /** Barva ručně označená „Momentálně vyprodáno“ (vrací { nabidnout } nebo undefined). */
+  function rucneVyprodanaBarva(p, barva) {
+    const k = Object.keys(p.barvyRucne || {}).find((n) => klicBarvy(n) === klicBarvy(barva));
+    return k ? p.barvyRucne[k] : undefined;
+  }
+
+  /** Kolik kusů máme skladem. Infinity = výrobek „bez hlídání zásob“ (tiskne se na objednávku).
+      Ruční „Momentálně vyprodáno“ u výrobku nebo barvy = 0 bez ohledu na počet. */
   function skladem(p, barva) {
-    if (p.skladem === undefined || p.skladem === null || p.skladem === "") return Infinity;
-    const n = skladPodleBarev(p) ? p.skladem[Object.keys(p.skladem).find((k) => klicBarvy(k) === klicBarvy(barva))] : p.skladem;
-    return Math.max(0, Math.floor(Number(n)) || 0);
+    if (p.vyprodanoRucne) return 0;
+    if (barva && rucneVyprodanaBarva(p, barva)) return 0;
+    const z = p.zasoba || { rezim: "bez_hlidani" };
+    if (z.rezim === "celkem") return Math.max(0, Math.floor(Number(z.celkem)) || 0);
+    if (z.rezim === "po_barvach") {
+      const k = Object.keys(z.poBarvach).find((n) => klicBarvy(n) === klicBarvy(barva));
+      return k ? Math.max(0, Math.floor(Number(z.poBarvach[k])) || 0) : 0;
+    }
+    return Infinity;
   }
 
-  /** Výrobek je celý vyprodaný – skladem: 0, nebo u počtu podle barev nemá kus v žádné barvě. */
+  /** Výrobek je celý vyprodaný – 0 kusů (u počtu podle barev v žádné barvě), nebo ruční „Momentálně vyprodáno“. */
   function vyprodano(p) {
-    if (!skladPodleBarev(p)) return skladem(p) === 0;
-    const barvy = p.barvy && p.barvy.length ? p.barvy : Object.keys(p.skladem);
-    return barvy.every((b) => skladem(p, b) === 0);
+    if (p.vyprodanoRucne) return true;
+    const barvy = barvyProduktu(p);
+    return barvy.length ? barvy.every((b) => skladem(p, b.nazev) === 0) : skladem(p) === 0;
+  }
+
+  /** Nabídnout u vyprodaného výběru „Objednat do výroby“? U ručně vyprodaného výrobku nebo barvy rozhoduje admin,
+      u vyprodání počtem kusů přepínač u výrobku. */
+  function nabizetVyrobu(p, barva) {
+    if (p.vyprodanoRucne) return p.nabidnoutVyrobu;
+    const rucne = [].concat(barva).filter(Boolean).map((b) => rucneVyprodanaBarva(p, b)).filter(Boolean);
+    return rucne.length ? rucne.every((r) => r.nabidnout) : p.nabidnoutVyrobu !== false;
   }
 
   /** Velikosti výrobku z produkty.js, např. velikosti: [{ nazev: "S", cena: 290 }, { nazev: "M", cena: 390 }].
@@ -170,18 +214,45 @@
     return `<h3>Materiál a péče</h3>${popisHtml(odrazky)}${p.autor ? popisHtml(`Autor modelu: ${p.autor}`) : ""}`;
   }
 
-  /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“).
+  /** Kolik kusů dovolí zásoba, když už jsou v košíku „polozky“ (Infinity = bez hlídání zásob).
       „barva“ může být i seznam barev sady: při počtu podle barev sada ubere z každé barvy tolik, kolikrát je v ní. */
+  function volnoZeZasob(p, barva, polozky) {
+    const chci = [].concat(barva);
+    if (!skladPodleBarev(p)) {
+      if (chci.some((b) => b && skladem(p, b) === 0)) return 0; // ručně vyprodaná barva
+      return skladem(p) - polozky.reduce((s, i) => s + i.pocet, 0);
+    }
+    const stejna = (a) => (b) => klicBarvy(a) === klicBarvy(b);
+    return Math.min(
+      ...chci.map((b) => {
+        const vKosiku = polozky.reduce((s, i) => s + i.pocet * barvyPolozky(i).filter(stejna(b)).length, 0);
+        return Math.floor((skladem(p, b) - vKosiku) / chci.filter(stejna(b)).length);
+      }),
+    );
+  }
+
+  /** Kolik kusů zvoleného výběru máme skladem, bez ohledu na košík. */
+  function zasobaVyberu(p, barva) {
+    return Math.max(0, volnoZeZasob(p, barva, []));
+  }
+
+  /** Kolik kusů ještě jde dát do košíku – odečte kusy, které už v košíku jsou (kromě položky „krome“).
+      Hlídá zásobu i limit kusů jednoho výrobku v objednávce (všechny barvy a velikosti dohromady). */
   function lzePridat(p, barva, krome) {
     const polozky = kosik.filter((i) => i !== krome && i.id === p.id);
-    if (!skladPodleBarev(p)) return Math.max(0, Math.min(MAX_KUSU, skladem(p) - polozky.reduce((s, i) => s + i.pocet, 0)));
-    const stejna = (a) => (b) => klicBarvy(a) === klicBarvy(b);
-    const chci = [].concat(barva);
-    const volno = chci.map((b) => {
-      const vKosiku = polozky.reduce((s, i) => s + i.pocet * barvyPolozky(i).filter(stejna(b)).length, 0);
-      return Math.floor((skladem(p, b) - vKosiku) / chci.filter(stejna(b)).length);
-    });
-    return Math.max(0, Math.min(MAX_KUSU, ...volno));
+    const doLimitu = MAX_KUSU - polozky.reduce((s, i) => s + i.pocet, 0);
+    return Math.max(0, Math.min(doLimitu, volnoZeZasob(p, barva, polozky)));
+  }
+
+  /** Je počet omezený limitem kusů v objednávce (a ne zásobou)? */
+  function omezujeLimit(p, barva, krome) {
+    const polozky = kosik.filter((i) => i !== krome && i.id === p.id);
+    return MAX_KUSU - polozky.reduce((s, i) => s + i.pocet, 0) <= volnoZeZasob(p, barva, polozky);
+  }
+
+  /** Věta pod výběrem počtu, když zákazník narazí na limit kusů. */
+  function limitHtml() {
+    return `Potřebujete víc než ${MAX_KUSU} ${kusy(MAX_KUSU)}? <a class="link" href="#kontakt">Napište nám</a>, domluvíme se.`;
   }
 
   /** Fotka produktu, nebo zástupný obrázek ve stylu FILARA, dokud fotka není. */
@@ -231,20 +302,8 @@
     }
   }
 
-  let kosik = nactiKosik();
-
-  /** Když v produkty.js ubude kusů skladem, uberou se i z košíku. Vrací true, pokud se košík změnil. */
-  function orizniKosik() {
-    let zmena = false;
-    kosik = kosik.filter((pol) => {
-      const max = lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol);
-      if (pol.pocet <= max) return true;
-      zmena = true;
-      pol.pocet = max;
-      return max > 0;
-    });
-    return zmena;
-  }
+  // Košík se načte až s katalogem (bez výrobků by se platné položky zahodily).
+  let kosik = [];
 
   function ulozKosik() {
     try {
@@ -289,7 +348,7 @@
 
   // Košík otevřený ve více záložkách zůstane stejný.
   window.addEventListener("storage", (e) => {
-    if (e.key !== KLIC_KOSIKU) return;
+    if (e.key !== KLIC_KOSIKU || stavKatalogu !== "ok") return;
     kosik = nactiKosik();
     aktualizujPocet();
     if (location.hash === "#kosik") zobraz();
@@ -424,8 +483,22 @@
 
   /* ---------- Stránky ---------- */
 
+  /** Místo stránky s výrobky, dokud se katalog načítá, nebo když se načíst nepodařil. */
+  function stavKataloguHtml() {
+    if (stavKatalogu === "nacita") return `<div class="container page"><p class="nacitani" role="status">Načítám…</p></div>`;
+    const tel = String(OBCHOD.telefon || "");
+    return `
+      <div class="container page" style="text-align:center">
+        <h1 class="chrome-text">Nabídku se nepodařilo načíst</h1>
+        <p class="empty" style="margin:16px 0 24px">Spojení s naším obchodem teď nefunguje. Zkuste to prosím za chvíli znovu.<br />
+          Pokud potíže trvají, napište nám na <a class="link" href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a>${tel ? ` nebo zavolejte na <a class="link" href="tel:${esc(tel.replace(/[^\d+]/g, ""))}">${esc(tel)}</a>` : ""}.</p>
+        <button type="button" class="btn btn-primary" data-znovu-nacist>Zkusit znovu</button>
+      </div>`;
+  }
+
   function uvod() {
-    const doporucene = PRODUKTY.filter((p) => p.doporuceny);
+    // Úvod se ukáže hned; oblíbené výrobky se doplní, až se katalog načte.
+    const doporucene = stavKatalogu === "ok" ? PRODUKTY.filter((p) => p.doporuceny) : [];
     const vyhody = [
       ["srdce", "Rodinná výroba", "Každý výrobek ručně dočistíme a zkontrolujeme."],
       ["barvy", "Barevné variace", "Většina výrobků k dispozici v několika barvách."],
@@ -455,7 +528,9 @@
         </div>
         <div class="grid" style="margin-top:0">${doporucene.map(kartaProduktu).join("")}</div>
       </section>`
-          : ""
+          : stavKatalogu === "nacita"
+            ? `<section class="container section"><p class="nacitani" role="status">Načítám…</p></section>`
+            : ""
       }`;
   }
 
@@ -625,14 +700,17 @@
               ${vyberBarvy}
               <div class="buy-row">
                 <p class="price" id="cena">${velikosti.length && !vyprodano(p) ? kc.format(cenaProduktu(p)) : cenaNeboVyprodano(p)}</p>
-                <div class="qty">
+                <div class="qty" id="vyber-poctu">
                   <button type="button" data-zmena="-1" aria-label="Méně">−</button>
                   <output id="pocet" aria-live="polite">1</output>
                   <button type="button" data-zmena="1" aria-label="Více">+</button>
                 </div>
                 <button type="button" class="btn btn-primary" id="pridat">Přidat do košíku</button>
+                <a href="#kontakt" class="btn btn-primary" id="do-vyroby" hidden>Objednat do výroby</a>
               </div>
+              <p class="zasoba-stitek" id="zasoba-stitek" hidden></p>
               <p class="hint" id="sklad-info" aria-live="polite" hidden></p>
+              <p class="hint" id="limit-info" aria-live="polite" hidden>${limitHtml()}</p>
             </div>
           </div>
         </div>
@@ -670,22 +748,41 @@
     let pocet = 1;
     const vystupPoctu = document.getElementById("pocet");
     const tlacitko = document.getElementById("pridat");
+    const doVyroby = document.getElementById("do-vyroby");
+    const vyberPoctu = document.getElementById("vyber-poctu");
+    const stitek = document.getElementById("zasoba-stitek");
     const info = document.getElementById("sklad-info");
+    const limitInfo = document.getElementById("limit-info");
 
-    // Počet kusů nepustí nad zásobu skladem (počítají se i kusy, které už jsou v košíku).
+    // Počet kusů nepustí nad zásobu skladem ani nad limit kusů v objednávce (počítají se i kusy, které už jsou v košíku).
     function obnovPocet() {
       const vybrane = sadaBarvy || barva;
-      const zasoba = Math.min(...[].concat(vybrane).map((b) => skladem(p, b)));
+      const zasoba = zasobaVyberu(p, vybrane);
       const max = lzePridat(p, vybrane);
-      const malo = pocet > max && zasoba < Infinity;
+      const limit = omezujeLimit(p, vybrane);
+      const malo = pocet > max && zasoba < Infinity && !limit;
       pocet = Math.max(1, Math.min(max, pocet));
       vystupPoctu.textContent = max ? pocet : 0;
       tlacitko.disabled = max === 0;
-      if (max === 0 && zasoba === 0) info.textContent = "Momentálně vyprodáno.";
+
+      // Vyprodaný výběr: místo košíku „Objednat do výroby“ (pokud ho u výrobku nabízíme).
+      const vyroba = zasoba === 0 && nabizetVyrobu(p, vybrane);
+      tlacitko.hidden = vyroba;
+      vyberPoctu.hidden = vyroba;
+      doVyroby.hidden = !vyroba;
+
+      // Štítek „poslední kusy“ – jen u výrobků, u kterých hlídáme zásoby.
+      stitek.textContent = zasoba === 2 ? "Zbývají poslední 2 kusy" : "Zbývá poslední kus";
+      stitek.hidden = zasoba !== 1 && zasoba !== 2;
+
+      if (zasoba === 0) info.textContent = "Momentálně vyprodáno.";
       else if (max === 0 && sadaBarvy) info.textContent = "V téhle kombinaci barev teď tolik kusů skladem nemáme. Zkuste prosím jinou.";
       else if (max === 0) info.textContent = "Všechny kusy, které máme skladem, už máte v košíku.";
       else info.textContent = "Víc kusů teď skladem nemáme.";
-      info.hidden = max > 0 && !malo;
+      info.hidden = zasoba > 0 && (limit || (max > 0 && !malo));
+
+      // Limit kusů v objednávce: věta s odkazem na Kontakt, jakmile na něj zákazník narazí.
+      limitInfo.hidden = !(zasoba > 0 && limit && pocet >= max);
     }
 
     // Má-li výrobek fotky pro každou barvu (nebo variantu) zvlášť, ukážou se fotky té zvolené.
@@ -830,7 +927,8 @@
             <label class="field"><span>Poznámka k objednávce</span><textarea class="input" name="poznamka" maxlength="1000">${esc(udaje.poznamka)}</textarea></label>
             <label class="checkbox"><input type="checkbox" name="zapamatovat" ${zapamatovat ? "checked" : ""} />Zapamatovat si moje údaje pro příští objednávku (uloží se jen v tomto prohlížeči)</label>
             <div class="totals" id="soucty"></div>
-            <button type="submit" class="btn btn-primary btn-block">Odeslat objednávku e-mailem</button>
+            <p class="hint kosik-blokace" id="blokace" role="alert" hidden></p>
+            <button type="submit" class="btn btn-primary btn-block" id="odeslat">Odeslat objednávku e-mailem</button>
             <p class="hint">Otevře se váš e-mailový program s připravenou objednávkou – stačí ji odeslat. Potvrzení a platební údaje vám pošleme zpět.</p>
             ${infoStranky.length ? `<p class="hint">Odesláním objednávky souhlasíte s <a class="link" href="#obchodni-podminky">obchodními podmínkami</a>. Jak nakládáme s vašimi údaji, najdete v <a class="link" href="#ochrana-osobnich-udaju">ochraně osobních údajů</a>.</p>` : ""}
             <div class="after-send" id="po-odeslani" hidden>
@@ -845,12 +943,51 @@
       </div>`;
   }
 
+  /** Stav položky košíku proti aktuálním zásobám: vyprodaná, víc kusů, než jde objednat, nebo v pořádku. */
+  function stavPolozky(pol) {
+    const p = najdiProdukt(pol.id);
+    const barvy = barvyPolozky(pol);
+    const pryc = zasobaVyberu(p, barvy) === 0;
+    const max = lzePridat(p, barvy, pol);
+    return { pryc, max, malo: !pryc && pol.pocet > max, limit: omezujeLimit(p, barvy, pol) };
+  }
+
+  /** Dokud je v košíku vyprodaná položka (nebo víc kusů, než máme), objednávka nejde odeslat. */
+  function obnovBlokaci() {
+    const stavy = kosik.map(stavPolozky);
+    const box = document.getElementById("blokace");
+    const odeslat = document.getElementById("odeslat");
+    if (!box || !odeslat) return;
+    const pryc = stavy.some((s) => s.pryc);
+    const malo = stavy.some((s) => s.malo);
+    box.textContent = pryc
+      ? "V košíku je vyprodaná položka. Než objednávku odešlete, odeberte ji prosím."
+      : malo
+        ? "U některé položky máte víc kusů, než můžeme dodat. Upravte prosím počet."
+        : "";
+    box.hidden = !pryc && !malo;
+    odeslat.disabled = pryc || malo;
+  }
+
   function vykresliPolozky() {
     document.getElementById("polozky").innerHTML = kosik
       .map((pol, n) => {
         const p = najdiProdukt(pol.id);
         const b = najdiBarvu(pol.barva);
-        return `<li class="card cart-item">
+        const s = stavPolozky(pol);
+        const upozorneni = s.malo
+          ? `<div class="cart-item-upozorneni">${
+              s.limit
+                ? `V jedné objednávce může být nejvýš ${MAX_KUSU} ${kusy(MAX_KUSU)} tohoto výrobku, v košíku máte ${pol.pocet}.`
+                : `Zbývá jen ${s.max} ks, v košíku máte ${pol.pocet}.`
+            } <button type="button" class="link-button" data-upravit="${n}">Upravit na ${s.max} ks</button></div>`
+          : "";
+        const stitekPryc = s.pryc
+          ? `<p class="cart-item-stav"><strong>Bohužel někdo byl rychlejší, kus je už pryč</strong>${
+              nabizetVyrobu(p, barvyPolozky(pol)) ? ` <a href="#kontakt">Můžeme ho vyrobit na zakázku</a>` : ""
+            }</p>`
+          : "";
+        return `<li class="card cart-item${s.pryc ? " cart-item-pryc" : ""}">
           <a href="#produkt/${encodeURIComponent(p.id)}" class="cart-item-thumb">${obrazek(fotkyProduktu(p, barvyPolozky(pol)[0], pol.velikost)[0], p.nazev, PRODUKTY.indexOf(p))}</a>
           <div class="cart-item-body">
             <div class="cart-item-top"><a href="#produkt/${encodeURIComponent(p.id)}">${esc(p.nazev)}</a><span>${kc.format(cenaProduktu(p, pol.velikost) * pol.pocet)}</span></div>
@@ -858,18 +995,26 @@
             ${pol.barva ? `<div class="cart-item-meta"><i style="background:${esc(b ? b.hex : "#888")}"></i>${esc(pol.barva)}</div>` : ""}
             ${popisSady(p, pol).map((c) => `<div class="cart-item-meta"><i style="background:${esc(najdiBarvu(c.barva)?.hex || "#888")}"></i>${esc(c.text)}</div>`).join("")}
             ${pol.poznamka ? `<div class="cart-item-note">„${esc(pol.poznamka)}“</div>` : ""}
+            ${upozorneni}
             <div class="cart-item-actions">
-              <div class="qty qty-small">
+              ${
+                s.pryc
+                  ? "<span></span>"
+                  : `<div class="qty qty-small">
                 <button type="button" data-polozka="${n}" data-zmena="-1" aria-label="Méně">−</button>
                 <output>${pol.pocet}</output>
-                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více" ${pol.pocet >= lzePridat(p, barvyPolozky(pol), pol) ? 'disabled title="Víc kusů skladem nemáme"' : ""}>+</button>
-              </div>
+                <button type="button" data-polozka="${n}" data-zmena="1" aria-label="Více" ${pol.pocet >= s.max ? `disabled title="${s.limit ? "Víc kusů v jedné objednávce nejde" : "Víc kusů skladem nemáme"}"` : ""}>+</button>
+              </div>`
+              }
               <button type="button" class="remove" data-odebrat="${n}">Odebrat</button>
             </div>
+            ${!s.pryc && !s.malo && s.limit && pol.pocet >= s.max ? `<p class="hint">${limitHtml()}</p>` : ""}
           </div>
+          ${stitekPryc}
         </li>`;
       })
       .join("");
+    obnovBlokaci();
   }
 
   function vykresliAdresu() {
@@ -956,6 +1101,15 @@ Děkuji`;
     vykresliAdresu();
     vykresliSoucty();
 
+    // Při otevření košíku se porovná s čerstvými zásobami z databáze (někdo mohl mezitím poslední kus koupit).
+    window.FilaraKatalog.obnovZasoby(PRODUKTY)
+      .then(() => {
+        if (!form.isConnected) return;
+        vykresliPolozky();
+        vykresliSoucty();
+      })
+      .catch((chyba) => console.warn("Zásoby se nepodařilo obnovit, košík ukazuje stav z načtení stránky.", chyba));
+
     document.getElementById("polozky").addEventListener("click", (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
@@ -965,7 +1119,13 @@ Děkuji`;
         if (kosik.length === 0) return zobraz();
       } else if (btn.dataset.zmena) {
         const pol = kosik[Number(btn.dataset.polozka)];
-        pol.pocet = Math.max(1, Math.min(lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol), pol.pocet + Number(btn.dataset.zmena)));
+        const max = lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol);
+        // Ubrat jde vždy (i když je kusů víc, než máme); přidat jen do zásoby a limitu.
+        pol.pocet = Number(btn.dataset.zmena) < 0 ? Math.max(1, pol.pocet - 1) : Math.max(1, Math.min(max, pol.pocet + 1));
+        ulozKosik();
+      } else if (btn.dataset.upravit !== undefined) {
+        const pol = kosik[Number(btn.dataset.upravit)];
+        pol.pocet = Math.max(1, lzePridat(najdiProdukt(pol.id), barvyPolozky(pol), pol));
         ulozKosik();
       }
       vykresliPolozky();
@@ -985,6 +1145,7 @@ Děkuji`;
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (kosik.some((pol) => stavPolozky(pol).pryc || stavPolozky(pol).malo)) return obnovBlokaci();
       if (!zkontrolujUdaje(form)) return;
       ulozUdaje();
       const predmet = `Objednávka z webu ${OBCHOD.nazev} – ${udaje.jmeno.trim()}`;
@@ -1101,22 +1262,24 @@ Děkuji`;
 
   /* ---------- Přepínání stránek ---------- */
 
-  function zobraz() {
+  function aktualniStranka() {
     // Poškozená adresa (např. ručně přepsané %) nesmí shodit celý web – ukáže se „Stránka nenalezena“.
-    let hash;
     try {
-      hash = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+      return decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/");
     } catch {
-      hash = "nenalezeno";
+      return ["nenalezeno"];
     }
-    const [stranka, param] = hash.split("/");
-    document.title = `${OBCHOD.nazev} – 3D tisk Únětice | dekorace, zvířátka a dárky z 3D tiskárny`;
-    if (orizniKosik()) {
-      ulozKosik();
-      toast("Některé kusy už nemáme skladem, proto jsme je z košíku ubrali.");
-    }
+  }
 
-    if (!stranka) app.innerHTML = uvod();
+  // Stránky, které bez katalogu z databáze nejdou ukázat.
+  const STRANKY_S_KATALOGEM = ["nabidka", "produkty", "produkt", "kosik"];
+
+  function zobraz(volby = {}) {
+    const [stranka, param] = aktualniStranka();
+    document.title = `${OBCHOD.nazev} – 3D tisk Únětice | dekorace, zvířátka a dárky z 3D tiskárny`;
+
+    if (STRANKY_S_KATALOGEM.includes(stranka) && stavKatalogu !== "ok") app.innerHTML = stavKataloguHtml();
+    else if (!stranka) app.innerHTML = uvod();
     else if (stranka === "nabidka" || stranka === "produkty") {
       app.innerHTML = nabidka(param);
       napojNabidku();
@@ -1136,8 +1299,31 @@ Děkuji`;
       if (a.getAttribute("href") === `#${aktivni}`) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    window.scrollTo(0, 0);
+    if (!volby.zachovatPosun) window.scrollTo(0, 0);
   }
+
+  /** Načte katalog z databáze; pak překreslí stránku, která na něj čekala. */
+  async function nactiKatalog() {
+    stavKatalogu = "nacita";
+    try {
+      if (!window.FilaraKatalog) throw new Error("Soubor js/katalog.js se nenačetl.");
+      prevezmiKatalog(await window.FilaraKatalog.nacti());
+      kosik = nactiKosik();
+      stavKatalogu = "ok";
+      aktualizujPocet();
+    } catch (chyba) {
+      console.error("Katalog z databáze se nepodařilo načíst:", chyba);
+      stavKatalogu = "chyba";
+    }
+    const [stranka] = aktualniStranka();
+    if (!stranka || STRANKY_S_KATALOGEM.includes(stranka)) zobraz({ zachovatPosun: true });
+  }
+
+  app.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-znovu-nacist]")) return;
+    nactiKatalog(); // hned přepne stav na „nacita“, takže zobraz() ukáže „Načítám…“
+    zobraz({ zachovatPosun: true });
+  });
 
   document.querySelectorAll("[data-shop-name]").forEach((el) => (el.textContent = OBCHOD.nazev));
   document.querySelectorAll("[data-shop-email]").forEach((el) => {
@@ -1177,4 +1363,5 @@ Děkuji`;
   window.addEventListener("hashchange", priZmeneAdresy);
   aktualizujPocet();
   zobraz();
+  nactiKatalog();
 })();
