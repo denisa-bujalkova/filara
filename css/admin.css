@@ -1,0 +1,363 @@
+/* Správa obchodu (admin.html) – staví na css/styly.css, jen doplňuje, co web nemá.
+   Ovládání je dělané na telefon: velká tlačítka, karty pod sebou. */
+
+.admin-znacka {
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.admin-odhlasit {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.admin {
+  padding-bottom: 48px;
+}
+
+.admin .page {
+  max-width: 980px;
+}
+
+.admin h1 {
+  margin: 0 0 16px;
+}
+
+.admin-prihlaseni {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.admin-prihlaseni h1 {
+  font-size: 26px;
+}
+
+.admin-prihlaseni .btn {
+  margin-top: 18px;
+}
+
+.admin-qr {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  margin: 16px auto;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-tajny-kod {
+  display: block;
+  margin: 8px 0 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.admin-kod {
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+
+/* Lišta s filtrem a hledáním */
+.admin-filtr {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-filtr .input {
+  flex: 1 1 200px;
+  width: auto;
+}
+
+.admin-filtr select.input {
+  flex: 0 1 220px;
+}
+
+/* Seznamy karet */
+.admin-seznam {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-karta {
+  padding: 14px 16px;
+}
+
+.admin-karta-hlavicka {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.admin-karta-hlavicka h2,
+.admin-karta-hlavicka h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.admin-karta a.admin-karta-odkaz {
+  color: inherit;
+}
+
+.admin-karta a.admin-karta-odkaz:hover h2 {
+  color: var(--cyan);
+}
+
+.admin-meta {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.admin-akce {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-akce .btn {
+  min-height: 44px;
+}
+
+.admin-prazdne {
+  margin: 32px 0;
+  text-align: center;
+  color: var(--subtle);
+}
+
+/* Štítky stavů */
+.stav {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.stav-nova {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.stav-zaplacena,
+.stav-ve_vyrobe,
+.stav-odeslana {
+  background: #e0f2fe;
+  border-color: #38bdf8;
+  color: #075985;
+}
+
+.stav-vyrizena {
+  background: #dcfce7;
+  border-color: #4ade80;
+  color: #166534;
+}
+
+.stav-zrusena {
+  background: #f3f4f6;
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+.po-splatnosti {
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+/* Detail objednávky */
+.admin-detail {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .admin-detail {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.admin-detail .card {
+  padding: 18px;
+}
+
+.admin-detail h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.admin-udaje {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.admin-udaje div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+}
+
+.admin-udaje dt {
+  color: var(--subtle);
+}
+
+.admin-udaje dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.admin-polozky {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.admin-polozky li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.admin-polozky span {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.admin-poznamka {
+  white-space: pre-wrap;
+}
+
+/* Sklad */
+.sklad-radek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sklad-nazev {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 15px;
+}
+
+.sklad-nazev i {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+}
+
+.sklad-pocet {
+  min-width: 44px;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sklad-pocet.nula {
+  color: #b91c1c;
+}
+
+.sklad-tlacitko {
+  width: 56px;
+  height: 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.sklad-tlacitko:active {
+  background: var(--surface-2);
+}
+
+.sklad-tlacitko:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+.admin-prepinac {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.admin-prepinac input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.admin-vyprodano {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.admin-vyprodano summary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.admin-vyprodano summary .sold-out {
+  margin-left: 6px;
+}
+
+.admin-vyprodano textarea {
+  min-height: 64px;
+  margin-top: 8px;
+}
+
+.admin-skryty {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--subtle);
+}
