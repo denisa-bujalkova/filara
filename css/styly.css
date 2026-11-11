@@ -1892,3 +1892,115 @@ mark.doplnit {
   box-shadow: none;
   cursor: not-allowed;
 }
+
+
+/* ---------- Děkujeme za objednávku (platební údaje, QR platba, tisk) ---------- */
+
+.dekujeme-cislo {
+  margin: 12px 0 0;
+  font-size: 17px;
+}
+
+.dekujeme-layout {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (min-width: 960px) {
+  .dekujeme-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.dekujeme .summary {
+  position: static;
+}
+
+.platba {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.platba div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.platba dt {
+  color: var(--subtle);
+}
+
+.platba dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.qr-platba {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.qr-platba svg {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.dekujeme-polozky {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.dekujeme-polozky li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dekujeme-polozky span {
+  display: block;
+  color: var(--muted);
+}
+
+.dekujeme-cena {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.dekujeme-info {
+  margin: 24px 0 16px;
+  color: var(--muted);
+}
+
+@media print {
+  .header,
+  .footer,
+  .toast,
+  #tisk {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .dekujeme .card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}

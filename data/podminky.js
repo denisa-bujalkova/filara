@@ -33,7 +33,7 @@ const INFO_STRANKY = [
 
       Objednávka a uzavření smlouvy:
 
-      Výrobky si vyberete na webu a vložíte do košíku. Po vyplnění údajů se vám otevře e-mail s připravenou objednávkou, který nám odešlete. Objednávku si přečteme a pošleme vám e-mailem potvrzení s celkovou cenou, platebními údaji a předpokládaným termínem. Kupní smlouva vzniká ve chvíli, kdy vám objednávku potvrdíme.
+      Výrobky si vyberete na webu a vložíte do košíku. Po vyplnění údajů objednávku odešlete tlačítkem v košíku a hned uvidíte číslo objednávky, celkovou cenu a platební údaje. Jakmile platbu obdržíme, objednávku vám potvrdíme a dáme vám vědět předpokládaný termín. Kupní smlouva vzniká ve chvíli, kdy vám objednávku potvrdíme.
 
       Kdyby se v objednávce něco nedalo splnit (třeba barva už není k dispozici), ozveme se vám a domluvíme se. Objednávku můžete zdarma zrušit, dokud vám ji nepotvrdíme.
 

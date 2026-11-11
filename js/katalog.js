@@ -210,6 +210,33 @@
     async obnovZasoby(produkty) {
       prevezmiZasoby(produkty, await nactiTabulky(ZASOBY));
     },
+    /** Vytvoří objednávku funkcí vytvor_objednavku (ceny a zásoby hlídá databáze) a vrátí její souhrn
+        s platebními údaji. Při chybě vyhodí výjimku s .kod (např. "nedostatek_zasob", "limit_kusu";
+        prázdný = výpadek spojení), .detail (rozbalený JSON, je-li) a .hint. */
+    async vytvorObjednavku(zakaznik, polozky) {
+      let odpoved;
+      try {
+        // Na vytvoření objednávky čekáme déle než na katalog (zámky zásob ve špičce).
+        const casovac = typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined;
+        let dotaz = db().rpc("vytvor_objednavku", { zakaznik, polozky });
+        if (casovac && dotaz.abortSignal) dotaz = dotaz.abortSignal(casovac);
+        odpoved = await dotaz;
+      } catch (e) {
+        odpoved = { error: { message: String(e && e.message ? e.message : e), code: "" } };
+      }
+      const { data, error } = odpoved;
+      if (!error && data && data.cislo) return data;
+      const chyba = new Error(error ? error.message : "Prázdná odpověď databáze");
+      // Chyby z funkce mají kód PostgreSQL (P0001) a v message náš kód; výpadek spojení kód nemá.
+      chyba.kod = error && error.code ? error.message : "";
+      chyba.hint = error?.hint || "";
+      try {
+        chyba.detail = error?.details ? JSON.parse(error.details) : null;
+      } catch {
+        chyba.detail = error.details;
+      }
+      throw chyba;
+    },
     sestav, // pro testy
   };
 })();

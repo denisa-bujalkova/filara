@@ -306,6 +306,7 @@
   let kosik = [];
 
   function ulozKosik() {
+    klicOdeslani = null; // změněný košík = nová objednávka
     try {
       localStorage.setItem(KLIC_KOSIKU, JSON.stringify(kosik));
     } catch {
@@ -928,16 +929,9 @@
             <label class="checkbox"><input type="checkbox" name="zapamatovat" ${zapamatovat ? "checked" : ""} />Zapamatovat si moje údaje pro příští objednávku (uloží se jen v tomto prohlížeči)</label>
             <div class="totals" id="soucty"></div>
             <p class="hint kosik-blokace" id="blokace" role="alert" hidden></p>
-            <button type="submit" class="btn btn-primary btn-block" id="odeslat">Odeslat objednávku e-mailem</button>
-            <p class="hint">Otevře se váš e-mailový program s připravenou objednávkou – stačí ji odeslat. Potvrzení a platební údaje vám pošleme zpět.</p>
+            <button type="submit" class="btn btn-primary btn-block" id="odeslat">${TEXT_ODESLAT}</button>
+            <p class="hint">Po odeslání se vám hned ukážou platební údaje a QR kód pro platbu.</p>
             ${infoStranky.length ? `<p class="hint">Odesláním objednávky souhlasíte s <a class="link" href="#obchodni-podminky">obchodními podmínkami</a>. Jak nakládáme s vašimi údaji, najdete v <a class="link" href="#ochrana-osobnich-udaju">ochraně osobních údajů</a>.</p>` : ""}
-            <div class="after-send" id="po-odeslani" hidden>
-              Neotevřel se e-mail? Zkopírujte objednávku a pošlete ji na <a class="link" href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a>.
-              <div class="actions">
-                <button type="button" class="btn btn-secondary" id="kopirovat">Zkopírovat objednávku</button>
-                <button type="button" class="btn btn-secondary" id="vyprazdnit">Objednávku jsem odeslal/a – vyprázdnit košík</button>
-              </div>
-            </div>
           </form>
         </div>
       </div>`;
@@ -1042,35 +1036,166 @@
       <div class="total"><span>Celkem</span><span>${kc.format(zbozi + d.cena)}</span></div>`;
   }
 
-  function textObjednavky() {
-    const d = DOPRAVA[udaje.doprava];
-    const radky = kosik.map((pol, n) => {
+  /* ---------- Odeslání objednávky do databáze ---------- */
+
+  const TEXT_ODESLAT = "Odeslat objednávku";
+
+  // Náhodný klíč odeslání: když spojení vypadne až po uložení objednávky a zákazník dá „Odeslat“ znovu,
+  // databáze vrátí tu první objednávku místo vytvoření druhé. Při změně košíku se klíč zahodí.
+  let klicOdeslani = null;
+  function novyKlic() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    const b = window.crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+
+  /** Košík → položky pro vytvor_objednavku (jen co, v jaké velikosti/barvě a kolik – ceny bere databáze). */
+  function polozkyProDatabazi() {
+    return kosik.map((pol) => {
       const p = najdiProdukt(pol.id);
-      const cena = cenaProduktu(p, pol.velikost);
-      const sada = popisSady(p, pol).map((c) => c.text).join(", ");
-      let r = `${n + 1}) ${p.nazev}${pol.velikost ? ` – ${popisekVelikosti(p).toLowerCase()}: ${pol.velikost}` : ""}${pol.barva ? ` – barva: ${pol.barva}` : ""}${sada ? ` – barvy: ${sada}` : ""} – ${pol.pocet} ks × ${kc.format(cena)} = ${kc.format(cena * pol.pocet)}`;
-      if (pol.poznamka) r += `\n   Poznámka: ${pol.poznamka}`;
-      return r;
+      const o = { produkt_id: p.id, pocet: pol.pocet };
+      const v = najdiVelikost(p, pol.velikost);
+      if (v) o.moznost_id = v.id;
+      if (pol.sadaBarvy) o.sada_barvy = pol.sadaBarvy.map((n) => najdiBarvu(n)?.id ?? null);
+      else if (pol.barva) o.barva_id = najdiBarvu(pol.barva)?.id ?? null;
+      if (pol.poznamka) o.poznamka = pol.poznamka;
+      return o;
     });
-    let adresa = "";
-    if (d.adresa === "vydejni-misto") adresa = `\nVýdejní místo: ${udaje.misto}`;
-    if (d.adresa === "dorucovaci") adresa = `\nAdresa: ${udaje.ulice}, ${udaje.psc} ${udaje.mesto}`;
-    return `Dobrý den,
+  }
 
-posílám objednávku z webu ${OBCHOD.nazev}:
+  /** Srozumitelná hláška k chybě z databáze (texty vykáním). */
+  function hlaskaChyby(chyba) {
+    const kontakt = `<a class="link" href="#kontakt">kontaktujte nás</a>`;
+    switch (chyba.kod) {
+      case "nedostatek_zasob":
+      case "vyprodano":
+        return "Mezitím se změnily zásoby a některé kusy už nemáme. Položky, kterých se to týká, jsme v košíku označili. Upravte je prosím a objednávku odešlete znovu.";
+      case "limit_nezaplacenych":
+        return `Na tento e-mail nebo telefon u nás už čekají nezaplacené objednávky. Než odešlete další, zaplaťte je prosím, nebo ${kontakt}.`;
+      case "limit_kusu": {
+        const p = najdiProdukt(chyba.detail?.produkt_id);
+        const limit = Number(chyba.detail?.limit) || MAX_KUSU;
+        return `${p ? `Výrobek „${esc(p.nazev)}“` : "Jeden výrobek"} můžete v jedné objednávce koupit nejvýš ${limit}×. Pokud potřebujete víc kusů, <a class="link" href="#kontakt">napište nám</a>, domluvíme se.`;
+      }
+      case "neplatna_objednavka":
+        return `Objednávku se nepodařilo odeslat, protože se mezitím změnila nabídka. Obnovte prosím stránku a zkontrolujte košík. Pokud potíže trvají, ${kontakt}.`;
+      default:
+        return `Objednávku se teď nepodařilo odeslat, spojení s naším obchodem nefunguje. Košík zůstává uložený, zkuste to prosím za chvíli znovu. Pokud potíže trvají, napište nám na <a class="link" href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a>.`;
+    }
+  }
 
-${radky.join("\n")}
+  /* ---------- Stránka „Děkujeme za objednávku“ ---------- */
 
-Zboží: ${kc.format(mezisoucet())}
-Doprava: ${d.nazev} – ${d.cena ? kc.format(d.cena) : "zdarma"}
-Celkem: ${kc.format(mezisoucet() + d.cena)}
+  // Údaje k právě odeslané objednávce zůstanou v této záložce i po obnovení stránky (sessionStorage).
+  const KLIC_OBJEDNAVKY = "filara-objednavka-v1";
+  let odeslanaObjednavka = null;
+  function ulozOdeslanou(o) {
+    odeslanaObjednavka = o;
+    try {
+      sessionStorage.setItem(KLIC_OBJEDNAVKY, JSON.stringify(o));
+    } catch {
+      /* úložiště nedostupné – údaje vydrží do obnovení stránky */
+    }
+  }
+  function nactiOdeslanou() {
+    if (odeslanaObjednavka) return odeslanaObjednavka;
+    try {
+      return JSON.parse(sessionStorage.getItem(KLIC_OBJEDNAVKY) || "null");
+    } catch {
+      return null;
+    }
+  }
 
-Jméno: ${udaje.jmeno}
-E-mail: ${udaje.email}
-Telefon: ${udaje.telefon}${adresa}${udaje.poznamka ? `\nPoznámka: ${udaje.poznamka}` : ""}
+  /** „2026-11-13“ → „13. 11. 2026“ */
+  function datumCesky(iso) {
+    const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${Number(m[3])}. ${Number(m[2])}. ${m[1]}` : "";
+  }
 
-Prosím o potvrzení objednávky a platební údaje.
-Děkuji`;
+  /** IBAN po čtveřicích, jak ho ukazují banky. */
+  function ibanCitelne(iban) {
+    return String(iban || "").replace(/(.{4})/g, "$1 ").trim();
+  }
+
+  /** QR platba (SPAYD) jako SVG, nebo prázdný řetězec, když to nejde. */
+  function qrPlatbaSvg(spayd) {
+    if (!spayd || typeof qrcode !== "function") return "";
+    try {
+      qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+      const qr = qrcode(0, "M");
+      qr.addData(spayd, "Byte");
+      qr.make();
+      return qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true, alt: "QR platba" });
+    } catch (chyba) {
+      console.warn("QR platbu se nepodařilo vytvořit:", chyba);
+      return "";
+    }
+  }
+
+  function dekujeme() {
+    const o = nactiOdeslanou();
+    if (!o)
+      return `
+        <div class="container page" style="text-align:center">
+          <h1 class="chrome-text">Děkujeme za objednávku</h1>
+          <p class="empty" style="margin:16px 0 32px">Údaje k objednávce už tu nejsou. Pokud jste si je neuložili, napište nám na <a class="link" href="mailto:${esc(OBCHOD.email)}">${esc(OBCHOD.email)}</a> a pošleme vám je.</p>
+          <a href="#nabidka" class="btn btn-primary">Zpět na nabídku</a>
+        </div>`;
+    const qr = qrPlatbaSvg(o.spayd);
+    const polozky = (o.polozky || [])
+      .map((p) => {
+        const upresneni = [
+          p.nazev_moznosti ? `${p.typ_moznosti || "Velikost"}: ${p.nazev_moznosti}` : "",
+          p.nazev_barvy ? `barva: ${p.nazev_barvy}` : "",
+          (p.sada || []).length ? `barvy: ${p.sada.map((k) => `${k.kus}: ${k.barva}`).join(", ")}` : "",
+        ].filter(Boolean);
+        return `<li>
+          <div><strong>${esc(p.nazev_produktu)}</strong>${upresneni.length ? `<span>${esc(upresneni.join(", "))}</span>` : ""}${p.poznamka ? `<span>„${esc(p.poznamka)}“</span>` : ""}</div>
+          <div class="dekujeme-cena"><span>${p.pocet} × ${kc.format(p.cena_za_kus)}</span><strong>${kc.format(p.cena_celkem)}</strong></div>
+        </li>`;
+      })
+      .join("");
+    return `
+      <div class="container page dekujeme">
+        <h1 class="chrome-text">Děkujeme za objednávku</h1>
+        <p class="dekujeme-cislo">Číslo vaší objednávky: <strong>${esc(o.cislo)}</strong></p>
+        <div class="dekujeme-layout">
+          <section class="card summary">
+            <h2>Platební údaje</h2>
+            <dl class="platba">
+              <div><dt>Číslo účtu</dt><dd>${esc(o.cislo_uctu)}</dd></div>
+              ${o.iban ? `<div><dt>IBAN</dt><dd>${esc(ibanCitelne(o.iban))}</dd></div>` : ""}
+              <div><dt>Částka</dt><dd><strong>${kc.format(o.cena_celkem)}</strong></dd></div>
+              <div><dt>Variabilní symbol</dt><dd>${esc(o.variabilni_symbol)}</dd></div>
+              <div><dt>Zpráva pro příjemce</dt><dd>${esc(o.zprava_pro_prijemce)}</dd></div>
+              <div><dt>Splatnost</dt><dd>${esc(datumCesky(o.datum_splatnosti))}</dd></div>
+            </dl>
+            ${
+              qr
+                ? `<div class="qr-platba">${qr}<p class="hint">QR platba – naskenujte ji v aplikaci své banky.</p></div>`
+                : `<p class="hint">QR platbu se teď nepodařilo vytvořit. Zadejte prosím platbu ručně podle údajů výše.</p>`
+            }
+          </section>
+          <section class="card summary">
+            <h2>Souhrn objednávky</h2>
+            <ul class="dekujeme-polozky">${polozky}</ul>
+            <div class="totals">
+              <div><span>Zboží</span><span>${kc.format(o.cena_zbozi)}</span></div>
+              <div><span>${esc(o.doprava_nazev)}</span><span>${o.doprava_cena ? kc.format(o.doprava_cena) : "Zdarma"}</span></div>
+              <div class="total"><span>Celkem</span><span>${kc.format(o.cena_celkem)}</span></div>
+            </div>
+          </section>
+        </div>
+        <p class="dekujeme-info">Jakmile platbu obdržíme, objednávku vám potvrdíme. Potvrzení e-mailem zatím neposíláme, proto si prosím tyto údaje uložte nebo vytiskněte.</p>
+        <button type="button" class="btn btn-primary" id="tisk">Vytisknout / uložit jako PDF</button>
+      </div>`;
+  }
+
+  function napojDekujeme() {
+    document.getElementById("tisk")?.addEventListener("click", () => window.print());
   }
 
   function zkontrolujUdaje(form) {
@@ -1143,16 +1268,70 @@ Děkuji`;
       vykresliSoucty();
     });
 
-    form.addEventListener("submit", (e) => {
+    let odesilam = false;
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (odesilam) return;
       if (kosik.some((pol) => stavPolozky(pol).pryc || stavPolozky(pol).malo)) return obnovBlokaci();
       if (!zkontrolujUdaje(form)) return;
+      const box = document.getElementById("chyby");
+      // Zásilkovna přijde v kroku 2e; do databáze teď jde jen osobní odběr.
+      if (DOPRAVA[udaje.doprava].adresa !== "zadna") {
+        box.innerHTML = "Tento způsob dopravy zatím nejde objednat online. Vyberte prosím osobní odběr.";
+        box.hidden = false;
+        return;
+      }
       ulozUdaje();
-      const predmet = `Objednávka z webu ${OBCHOD.nazev} – ${udaje.jmeno.trim()}`;
-      const odkaz = document.createElement("a");
-      odkaz.href = `mailto:${OBCHOD.email}?subject=${encodeURIComponent(predmet)}&body=${encodeURIComponent(textObjednavky())}`;
-      odkaz.click();
-      document.getElementById("po-odeslani").hidden = false;
+      odesilam = true;
+      const tlacitko = document.getElementById("odeslat");
+      tlacitko.disabled = true;
+      tlacitko.textContent = "Odesílám…";
+      klicOdeslani = klicOdeslani || novyKlic();
+      try {
+        const objednavka = await window.FilaraKatalog.vytvorObjednavku(
+          {
+            jmeno: udaje.jmeno.trim(),
+            email: udaje.email.trim(),
+            telefon: udaje.telefon.trim(),
+            doprava: "osobni",
+            poznamka: udaje.poznamka.trim(),
+            klic_odeslani: klicOdeslani,
+          },
+          polozkyProDatabazi(),
+        );
+        // Hotovo: údaje k platbě uložit, košík vyprázdnit, ukázat „Děkujeme“.
+        ulozOdeslanou(objednavka);
+        kosik = [];
+        ulozKosik();
+        klicOdeslani = null;
+        udaje.poznamka = "";
+        location.hash = "#dekujeme";
+        return;
+      } catch (chyba) {
+        console.error("Objednávku se nepodařilo odeslat:", chyba);
+        if (chyba.kod === "nedostatek_zasob" || chyba.kod === "vyprodano") {
+          // Znovu porovnat košík se zásobami a ukázat stav (černobílá fotka, „Zbývá jen…“).
+          try {
+            await window.FilaraKatalog.obnovZasoby(PRODUKTY);
+          } catch {
+            /* ukáže se aspoň hláška */
+          }
+          if (form.isConnected) {
+            vykresliPolozky();
+            vykresliSoucty();
+          }
+        }
+        box.innerHTML = hlaskaChyby(chyba);
+        box.hidden = false;
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
+      } finally {
+        odesilam = false;
+      }
+      if (form.isConnected) {
+        tlacitko.textContent = TEXT_ODESLAT;
+        tlacitko.disabled = false;
+        obnovBlokaci();
+      }
     });
 
     document.getElementById("zapomenout")?.addEventListener("click", () => {
@@ -1161,28 +1340,6 @@ Děkuji`;
       PAMATOVANE_UDAJE.forEach((k) => (udaje[k] = ""));
       zobraz();
       toast("Uložené údaje jsme z tohoto prohlížeče smazali.");
-    });
-
-    document.getElementById("kopirovat").addEventListener("click", async (e) => {
-      const text = textObjednavky();
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch {
-        const t = document.createElement("textarea");
-        t.value = text;
-        document.body.append(t);
-        t.select();
-        document.execCommand("copy");
-        t.remove();
-      }
-      e.target.textContent = "Zkopírováno ✓";
-    });
-
-    document.getElementById("vyprazdnit").addEventListener("click", () => {
-      kosik = [];
-      ulozKosik();
-      toast("Děkujeme za objednávku! Ozveme se vám co nejdříve.");
-      location.hash = "";
     });
   }
 
@@ -1291,6 +1448,10 @@ Děkuji`;
       napojKosik();
     } else if (stranka === "o-nas") app.innerHTML = oNas();
     else if (stranka === "kontakt") app.innerHTML = kontakt();
+    else if (stranka === "dekujeme") {
+      app.innerHTML = dekujeme();
+      napojDekujeme();
+    }
     else if (infoStranky.some((s) => s.adresa === stranka)) app.innerHTML = infoStranka(stranka);
     else app.innerHTML = nenalezeno();
 
