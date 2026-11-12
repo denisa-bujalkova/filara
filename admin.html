@@ -23,6 +23,8 @@
           <a href="#platby">Čeká na platbu</a>
           <a href="#objednavky">Objednávky</a>
           <a href="#sklad">Sklad</a>
+          <a href="#vyrobky">Výrobky</a>
+          <a href="#ciselniky">Barvy a kategorie</a>
         </nav>
         <button type="button" class="btn btn-secondary admin-odhlasit" id="odhlasit" hidden>Odhlásit</button>
       </div>
@@ -37,6 +39,8 @@
     </noscript>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
     <script src="js/config.js"></script>
+    <!-- Kvůli seznamu typů „Materiál a péče“ (PECE); výrobky samotné jsou v databázi. -->
+    <script src="data/produkty.js"></script>
     <script src="js/admin.js"></script>
   </body>
 </html>

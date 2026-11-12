@@ -361,3 +361,266 @@
   font-weight: 600;
   color: var(--subtle);
 }
+
+/* ---------- Výrobky, barvy a kategorie (krok 2d-2) ---------- */
+
+/* Menu s pěti položkami se na telefonu zalomí. */
+#admin-menu {
+  flex-wrap: wrap;
+}
+
+.admin-vyrobek {
+  display: flex;
+  gap: 14px;
+}
+
+.admin-vyrobek-foto {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.admin-vyrobek-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-vyrobek-telo {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-formular {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-formular .card {
+  padding: 18px;
+}
+
+.admin-formular h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.admin-formular h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.admin-formular .field {
+  margin-top: 12px;
+}
+
+.admin-popis {
+  min-height: 160px;
+}
+
+.admin-nahled {
+  margin-top: 10px;
+}
+
+.admin-nahled summary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.admin-dva {
+  display: grid;
+  gap: 0 12px;
+}
+
+@media (min-width: 640px) {
+  .admin-dva {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.admin-zaskrtavaci {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+}
+
+.admin-mini {
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-mini:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.admin-posun {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.admin-seznam-barev {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-seznam-barev li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-seznam-barev li span:first-of-type {
+  flex: 1;
+}
+
+.admin-seznam-barev i,
+.admin-barvy-mini i {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+}
+
+.admin-barvy-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.admin-barvy-mini legend {
+  padding: 0 4px;
+  color: var(--subtle);
+}
+
+.admin-barvy-mini label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.admin-moznost,
+.admin-kus {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.admin-moznost .btn,
+.admin-sada > .btn {
+  margin-top: 12px;
+}
+
+.admin-sada {
+  margin-top: 4px;
+}
+
+.admin-formular > .card > .btn {
+  margin-top: 14px;
+}
+
+.admin-fotky {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-fotky li {
+  padding: 10px;
+}
+
+.admin-fotky img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.admin-fotky .field {
+  margin-top: 8px;
+}
+
+.admin-hlavni {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--teal);
+}
+
+.admin-nahrat {
+  cursor: pointer;
+}
+
+.admin-ulozit {
+  align-items: center;
+}
+
+.admin-smazat {
+  margin-left: auto;
+  color: #b91c1c;
+}
+
+.admin-ciselnik {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+}
+
+.admin-ciselnik .field {
+  flex: 1 1 160px;
+  margin: 0;
+}
+
+.admin-ciselnik .admin-akce {
+  margin-top: 0;
+}
+
+.admin-odstin {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #5f6a75;
+}
+
+.admin-odstin-pole {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-odstin-pole input[type="color"] {
+  flex-shrink: 0;
+  width: 44px;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 2px;
+  background: var(--surface);
+}
